@@ -28,13 +28,13 @@ namespace GameEngine
             set
             {
                 _mesh = value;
-                _mesh.Transform = _parent.Transform;
+                _mesh.Transform = GameObject.Transform;
             }
         }
 
         public override void Draw()
         {
-            Graphics.Batch(Mesh);
+            //Graphics.Batch(Mesh);
         }
 
     }

@@ -22,6 +22,11 @@ namespace GameEngine
                 return GetComponeont<Transform>();
             }
         }
+        public GameObject Parent
+        {
+            get;
+            set;
+        }
 
         public GameObject() : this("Gameobject")
         {
@@ -72,7 +77,7 @@ namespace GameEngine
             Component c = Activator.CreateInstance<T>();
             _components.Add(c);
 
-            c._parent = this;
+            c.GameObject = this;
 
             c.Start();
         }
@@ -87,6 +92,11 @@ namespace GameEngine
                 }
             }
             return null;
+        }
+
+        public static GameObject Find(string Name)
+        {
+            return Engine.ObjectList.First(x => x.Name == Name);
         }
     }
 }

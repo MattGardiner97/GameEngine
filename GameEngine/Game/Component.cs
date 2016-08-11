@@ -8,7 +8,15 @@ namespace GameEngine
 {
     public abstract class Component
     {
-        internal GameObject _parent;
+        internal GameObject GameObject;
+
+        public Transform Transform
+        {
+            get
+            {
+                return GameObject.Transform;
+            }
+        }
 
         public virtual void Dispose()
         {

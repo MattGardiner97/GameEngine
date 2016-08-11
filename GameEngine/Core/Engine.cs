@@ -39,6 +39,10 @@ namespace GameEngine
             Time.Start();
 
             Graphics.Start();
+
+            GameObject camera = new GameObject();
+            camera.AddComponent<Camera>();
+            Camera.MainCamera = camera.GetComponeont<Camera>();
         }
 
         public static void Exit()
@@ -69,8 +73,20 @@ namespace GameEngine
                 go.Update();
             }
 
-            float fps = (1000 / (Time.DeltaTime * 1000));
-            Graphics.Form.Text = $"Game engine ({fps.ToString()} FPS)";
+            timeSinceLastUpdate += Time.DeltaTime;
+            if(timeSinceLastUpdate > 0.25)
+            {
+                UpdateFramerateCounter();
+                timeSinceLastUpdate = 0;
+            }
+            
+        }
+
+        static float timeSinceLastUpdate = 0f;
+        public static void UpdateFramerateCounter()
+        {
+            int fps = (int)(1 / Time.DeltaTime);
+            Graphics.Form.Text = $"GameEngine (FPS: {fps.ToString()})";
         }
 
         public static void Draw()

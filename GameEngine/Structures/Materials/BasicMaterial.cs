@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Drawing;
 using SharpDX;
-using SharpDX.Mathematics;
 using Color = SharpDX.Color;
 
-namespace GameEngine.Utilities
+namespace GameEngine
 {
-    public static class ColorExtensions
+    public class BasicMaterial : Material
     {
+        public Color MainColor
+        {
+            get;set;
+        }
     }
-    
 }

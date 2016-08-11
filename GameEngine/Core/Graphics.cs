@@ -39,12 +39,16 @@ namespace GameEngine
         private static Texture2D _depthBuffer;
         private static DepthStencilView _depthView;
 
-        private static InputLayout _layout;
-        private static ShaderBytecode _vsByteCode;
-        private static VertexShader _vertexShader;
-        private static ShaderBytecode _psByteCode;
-        private static PixelShader _pixelShader;
-        private static ShaderSignature _signature;
+        //private static InputLayout _layout;
+        //private static ShaderSignature _signature;
+
+        private static Dictionary<string, ShaderBytecode> _vertexShaderBytecodeList = new Dictionary<string, ShaderBytecode>();
+        private static Dictionary<string, VertexShader> _vertexShaderList = new Dictionary<string, VertexShader>();
+        private static Dictionary<string, ShaderSignature> _vertexShaderSignatureList = new Dictionary<string, ShaderSignature>();
+        private static Dictionary<string, InputLayout> _vertexShaderLayoutList = new Dictionary<string, InputLayout>();
+
+        private static Dictionary<string, ShaderBytecode> _pixelShaderBytecodeList = new Dictionary<string, ShaderBytecode>();
+        private static Dictionary<string, PixelShader> _pixelShaderList = new Dictionary<string, PixelShader>();
 
         private static Buffer _constantBuffer;
 
@@ -91,15 +95,40 @@ namespace GameEngine
             _depthBuffer.Dispose();
             _depthView.Dispose();
 
-            _layout.Dispose();
-            _vsByteCode.Dispose();
-            _vertexShader.Dispose();
-            _psByteCode.Dispose();
-            _pixelShader.Dispose();
-            _signature.Dispose();
+            //_layout.Dispose();
+            //_vsByteCode.Dispose();
+            //_vertexShader.Dispose();
+            //_psByteCode.Dispose();
+            //_pixelShader.Dispose();
+            foreach(ShaderBytecode sbc in _vertexShaderBytecodeList.Values)
+            {
+                sbc.Dispose();
+            }
+            foreach(ShaderBytecode sbc in _pixelShaderBytecodeList.Values)
+            {
+                sbc.Dispose();
+            }
+            foreach(VertexShader vs in _vertexShaderList.Values)
+            {
+                vs.Dispose();
+            }
+            foreach(PixelShader ps in _pixelShaderList.Values)
+            {
+                ps.Dispose();
+            }
+            foreach(ShaderSignature ss in _vertexShaderSignatureList.Values)
+            {
+                ss.Dispose();
+            }
+            foreach(InputLayout il in _vertexShaderLayoutList.Values)
+            {
+                il.Dispose();
+            }
 
-            _vertexBuffer.Dispose();
-            _indexBuffer.Dispose();
+            //_signature.Dispose();
+
+            //_vertexBuffer.Dispose();
+            //_indexBuffer.Dispose();
             _constantBuffer.Dispose();
         }
 
@@ -125,28 +154,59 @@ namespace GameEngine
             _factory = _swapChain.GetParent<Factory>();
             _factory.MakeWindowAssociation(_form.Handle, WindowAssociationFlags.IgnoreAll);
 
-            _vsByteCode = ShaderBytecode.CompileFromFile("Shader.hlsl","VS","vs_4_0");
-            _vertexShader = new VertexShader(_device, _vsByteCode);
+            //_vsByteCode = ShaderBytecode.CompileFromFile("Shader.hlsl","VS","vs_4_0");
+            //_vertexShader = new VertexShader(_device, _vsByteCode);
 
-            _psByteCode = ShaderBytecode.CompileFromFile("Shader.hlsl", "PS", "ps_4_0");
-            _pixelShader = new PixelShader(_device, _psByteCode);
+            //_psByteCode = ShaderBytecode.CompileFromFile("Shader.hlsl", "PS", "ps_4_0");
+            //_pixelShader = new PixelShader(_device, _psByteCode);
 
-            _signature = ShaderSignature.GetInputSignature(_vsByteCode);
+            //_signature = ShaderSignature.GetInputSignature(_vsByteCode);
 
-            _layout = new InputLayout(_device, _signature, new InputElement[]
+            //_layout = new InputLayout(_device, _signature, new InputElement[]
+            //{
+            //    new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0),
+            //    new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
+            //});
+
+            ShaderInformation.LoadAll();
+
+            foreach(ShaderInformation si in ShaderInformation.ShaderInfoList)
             {
-                new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0),
-                new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
-            });
+                ShaderBytecode vsByteCode = ShaderBytecode.CompileFromFile(si.Filename,si.VertexShaderFunctionName,"vs_4_0");
+                _vertexShaderBytecodeList.Add(si.Name, vsByteCode);
+
+                VertexShader vs = new VertexShader(_device, vsByteCode);
+                _vertexShaderList.Add(si.Name,vs);
+
+                ShaderBytecode psByteCode = ShaderBytecode.CompileFromFile(si.Filename, si.PixelShaderFunctionName, "ps_4_0");
+                _pixelShaderBytecodeList.Add(si.Name, psByteCode);
+
+                PixelShader ps = new PixelShader(_device, psByteCode);
+                _pixelShaderList.Add(si.Name, ps);
+
+                ShaderSignature sig = ShaderSignature.GetInputSignature(vsByteCode);
+                _vertexShaderSignatureList.Add(si.Name, sig);
+
+
+                InputElement[] elements = new InputElement[si.InputElementCount];
+
+                for(int i = 0; i <si.InputElementCount;i++)
+                {
+                    elements[i] = new InputElement();
+                }
+
+
+                InputLayout layout = new InputLayout(_device, vsByteCode,elements);
+            }
 
             //Defines a constant buffer holding the WorldViewProj for use by the VertexShader
             _constantBuffer = new Buffer(_device, SharpDX.Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
 
-            _context.InputAssembler.InputLayout = _layout;
+            //_context.InputAssembler.InputLayout = _layout;
             _context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-            _context.VertexShader.Set(_vertexShader);
+            //_context.VertexShader.Set(_vertexShader);
             _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
-            _context.PixelShader.Set(_pixelShader);
+            //_context.PixelShader.Set(_pixelShader);
 
             _backBuffer = Texture2D.FromSwapChain<Texture2D>(_swapChain, 0);
             _renderTargetView = new RenderTargetView(_device, _backBuffer);
@@ -168,6 +228,7 @@ namespace GameEngine
             _depthView = new DepthStencilView(_device, _depthBuffer);
 
             _context.Rasterizer.SetViewport(new Viewport(0, 0, Form.ClientSize.Width, Form.ClientSize.Height, 0.0f, 1.0f));
+
             _context.OutputMerger.SetTargets(_depthView, _renderTargetView);
 
             //Called when the program is exiting
@@ -185,26 +246,11 @@ namespace GameEngine
             };
         }
 
-        private static List<Vector3> _vertList = new List<Vector3>();
-        private static List<Vector4> _colorList = new List<Vector4>();
-        private static List<int> _triList = new List<int>();
-        private static Buffer _vertexBuffer;
-        private static Buffer _indexBuffer;
-        
-        public static void Batch(Mesh m)
+        private static List<Mesh> _meshList = new List<Mesh>();
+
+        public static void DrawMesh(Mesh m)
         {
-            for(int i = 0; i <m.Vertices.Length;i++)
-            {
-                _vertList.Add(m.Vertices[i] + m.Transform.Position);
-                _colorList.Add(new Vector4(m.Colors[i].R/255,m.Colors[i].G/255,m.Colors[i].B/255,1f));
-            }
-
-            int highestValue = _triList.Count == 0 ? 0 : _triList.Max() + 1;
-
-            for(int i = 0; i < m.Triangles.Length;i++)
-            {
-                _triList.Add(m.Triangles[i] + highestValue);
-            }
+            _meshList.Add(m);
         }
 
         internal static void Draw()
@@ -217,38 +263,47 @@ namespace GameEngine
             _worldViewProj.Transpose();
             _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
 
-            if (_vertList.Count != 0)
-            {
-                Vector4[] elementArray = new Vector4[_vertList.Count * 2];
-                List<Vector4> inputElementList = new List<Vector4>();
-
-                for(int i = 0;i < _vertList.Count;i++)
-                {
-                    Vector4 vertexPosition = new Vector4(_vertList[i], 1f);
-
-                    inputElementList.Add(vertexPosition);
-                    inputElementList.Add(_colorList[i]);
-                }
-
-                elementArray = inputElementList.ToArray();
-                int[] triangleArray = _triList.ToArray();
-
-                _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, elementArray);
-                _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, triangleArray);
-
-                _context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
-                _context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
-            }
-
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
-            _context.DrawIndexed(_triList.Count, 0, 0);
+            foreach (Mesh m in _meshList)
+            {
+                #region Transformation
+                Matrix worldMatrix = Matrix.Identity;
+
+                Matrix rotX = Matrix.RotationX(m.Transform.Rotation.X);
+                Matrix rotY = Matrix.RotationY(m.Transform.Rotation.Y);
+                Matrix rotZ = Matrix.RotationZ(m.Transform.Rotation.Z);
+                
+                Matrix translation = Matrix.Translation(m.Transform.WorldPosition);
+                Matrix scale = Matrix.Scaling(m.Transform.Scale);
+
+                worldMatrix = translation * (rotX * rotY*rotZ)* scale;
+
+                _worldViewProj = worldMatrix * _cameraView * _cameraProj;
+                _worldViewProj.Transpose();
+                
+                _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
+                _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
+                #endregion
+
+
+                
+
+                Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, elementArray);
+                Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, m.Triangles);
+
+                _context.InputAssembler.SetVertexBuffers(0,new VertexBufferBinding(_vertexBuffer,32,0));
+                _context.InputAssembler.SetIndexBuffer(_indexBuffer,Format.R32_UInt,0);
+
+                _context.DrawIndexed(m.Triangles.Length, 0, 0);
+
+                _vertexBuffer.Dispose();
+                _indexBuffer.Dispose();
+            }
             _swapChain.Present(0, PresentFlags.None);
 
-            _vertList.Clear();
-            _colorList.Clear();
-            _triList.Clear();
+            _meshList.Clear();
         }
 
         internal static void Start()

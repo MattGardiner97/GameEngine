@@ -33,10 +33,11 @@ namespace GameEngine
 
         public static void Update()
         {
+            //1 second = 10000000 ticks
+
             _stopwatch.Stop();
-            _deltaTime = _stopwatch.ElapsedMilliseconds / 1000f;
-            _stopwatch.Reset();
-            _stopwatch.Start();
+            _deltaTime = _stopwatch.ElapsedTicks / 10000000f;
+            _stopwatch.Restart();
             
         }
 

@@ -18,13 +18,13 @@ namespace GameEngine
             set
             {
                 _mesh = value;
-                _mesh.Transform = _parent.Transform;
+                _mesh.Transform = GameObject.Transform;
             }
         }
 
         public override void Draw()
         {
-            Graphics.Batch(_mesh);
+            Graphics.DrawMesh(_mesh);
         }
 
     }

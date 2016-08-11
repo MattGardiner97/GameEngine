@@ -74,7 +74,9 @@
     <Compile Include="Core\Graphics.cs" />
     <Compile Include="Core\Input.cs" />
     <Compile Include="Enums\PrimitiveType.cs" />
+    <Compile Include="Game\Components\Camera.cs" />
     <Compile Include="Game\Component.cs" />
+    <Compile Include="Structures\Material.cs" />
     <Compile Include="Game\Components\Shape2D.cs" />
     <Compile Include="Game\Components\MeshRenderer.cs" />
     <Compile Include="Game\Components\Transform.cs" />
@@ -86,11 +88,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Structures\Materials\BasicMaterial.cs" />
     <Compile Include="Structures\Mesh.cs" />
+    <Compile Include="Structures\VertexColorElement.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Utilities\Math.cs" />
+    <Compile Include="Utilities\ShaderInformation.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Todo.txt" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

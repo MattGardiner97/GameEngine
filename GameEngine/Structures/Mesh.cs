@@ -14,32 +14,22 @@ namespace GameEngine
     {
         public Vector3[] Vertices
         {
-            get;
-            set;
-        }
-        public Color[] Colors
-        {
-            get;
-            set;
+            get;set;
         }
         public int[] Triangles
         {
-            get;
-            set;
+            get;set;
         }
-        public Color FillColor
+        public Vector2[] UV
         {
-            set
-            {
-                Colors = new Color[Vertices.Length];
-
-                for(int i = 0;i < Colors.Length;i++)
-                {
-                    Colors[i] = value;
-                }
-            }
+            get;set;
         }
         public Transform Transform
+        {
+            get;set;
+        }
+
+        public Material Material
         {
             get;set;
         }
@@ -106,8 +96,6 @@ namespace GameEngine
             m.Vertices = verts;
             m.Triangles = tris;
 
-            m.FillColor = Color.White;
-
             return m;
 
         }
@@ -144,8 +132,6 @@ namespace GameEngine
 
             m.Vertices = verts;
             m.Triangles = tris;
-
-            m.FillColor = Color.White;
 
             return m;
         }
