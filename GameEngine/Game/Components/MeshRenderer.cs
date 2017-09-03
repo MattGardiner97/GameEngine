@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +24,7 @@ namespace GameEngine
 
         public override void Draw()
         {
-            Graphics.DrawMesh(_mesh);
+            Graphics.Current.DrawMesh(_mesh);
         }
 
     }

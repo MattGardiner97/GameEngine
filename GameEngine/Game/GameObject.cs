@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,23 +10,9 @@ namespace GameEngine
     {
         private List<Component> _components = new List<Component>();
 
-        public string Name
-        {
-            get;
-            set;
-        }
-        public Transform Transform
-        {
-            get
-            {
-                return GetComponeont<Transform>();
-            }
-        }
-        public GameObject Parent
-        {
-            get;
-            set;
-        }
+        public string Name { get; set; }
+        public Transform Transform { get { return GetComponeont<Transform>(); } }
+        public GameObject Parent { get; set; }
 
         public GameObject() : this("Gameobject")
         {
@@ -36,7 +22,7 @@ namespace GameEngine
         {
             this.Name = name;
 
-            Engine.ObjectList.Add(this);
+            Engine.Current.ObjectList.Add(this);
             AddComponent<Transform>();
         }
 
@@ -46,14 +32,14 @@ namespace GameEngine
         }
         public void Update()
         {
-            foreach(Component c in _components)
+            foreach (Component c in _components)
             {
                 c.Update();
             }
         }
         public void Draw()
         {
-            foreach(Component c in _components)
+            foreach (Component c in _components)
             {
                 c.Draw();
             }
@@ -61,18 +47,25 @@ namespace GameEngine
 
         public void Dispose()
         {
-            foreach(Component c in _components)
+            foreach (Component c in _components)
             {
                 c.Dispose();
             }
         }
 
+        private bool ComponentExists<T>()
+        {
+            for (int i = 0; i < _components.Count; i++)
+                if (_components[i] is T)
+                    return true;
+
+            return false;
+        }
+
         public void AddComponent<T>() where T : Component
         {
-            if(_components.Any(x => x is T))
-            {
+            if (ComponentExists<T>())
                 return;
-            }
 
             Component c = Activator.CreateInstance<T>();
             _components.Add(c);
@@ -84,9 +77,9 @@ namespace GameEngine
 
         public T GetComponeont<T>() where T : Component
         {
-            foreach(Component c in _components)
+            foreach (Component c in _components)
             {
-                if(c is T)
+                if (c is T)
                 {
                     return (T)c;
                 }
@@ -96,7 +89,12 @@ namespace GameEngine
 
         public static GameObject Find(string Name)
         {
-            return Engine.ObjectList.First(x => x.Name == Name);
+            for (int i = 0; i < Engine.Current.ObjectList.Count; i++)
+                if (Engine.Current.ObjectList[i].Name == Name)
+                    return Engine.Current.ObjectList[i];
+
+            return null;
+            //return Engine.Current.ObjectList.First(x => x.Name == Name);
         }
     }
 }

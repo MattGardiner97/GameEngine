@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,8 +31,7 @@ namespace GameEngine
             _keyboard.Poll();
             stateArray = _keyboard.GetBufferedData();
 
-            _previousKeysDown = (from x in _currentKeysDown
-                                 select x).ToList();
+            _previousKeysDown = _currentKeysDown;
             foreach (KeyboardUpdate state in stateArray)
             {
                 if(state.IsPressed == true)

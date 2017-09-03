@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,56 +13,58 @@ using System.Timers;
 
 namespace GameEngine
 {
-    public static class Engine
+    public class Engine
     {
-        internal static bool _finished = false;
+        private Graphics _graphics;
 
-        internal static List<GameObject> ObjectList = new List<GameObject>();
+        internal bool _finished { get; private set; } = false;
+        internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
 
+        public bool Finished { get; private set; }
 
-        public static bool Finished
+        public static Engine Current { get; private set; }
+
+        public Engine()
         {
-            get
-            {
-                return _finished;
-            }
+            Engine.Current = this;
+            _graphics = new Graphics(this);
         }
 
-        public static void Init()
+        public void Init()
         {
             Input.Init();
-            Graphics.Init();
+            _graphics.Init();
         }
 
-        public static void Start()
+        public void Start()
         {
             Time.Start();
 
-            Graphics.Start();
+            _graphics.Start();
 
             GameObject camera = new GameObject();
             camera.AddComponent<Camera>();
             Camera.MainCamera = camera.GetComponeont<Camera>();
         }
 
-        public static void Exit()
+        public void Exit()
         {
-            Graphics.Form.Close();
+            _graphics.Form.Close();
         }
 
-        internal static void Shutdown()
+        internal void Shutdown()
         {
             Dispose();
         }
 
-        internal static void EngineLoop()
+        internal void EngineLoop()
         {
             Update();
             Draw();
         }
 
 
-        public static void Update()
+        internal void Update()
         {
             Time.Update();
             Input.Update();
@@ -83,25 +85,25 @@ namespace GameEngine
         }
 
         static float timeSinceLastUpdate = 0f;
-        public static void UpdateFramerateCounter()
+        internal void UpdateFramerateCounter()
         {
             int fps = (int)(1 / Time.DeltaTime);
-            Graphics.Form.Text = $"GameEngine (FPS: {fps.ToString()})";
+            _graphics.Form.Text = $"GameEngine (FPS: {fps.ToString()})";
         }
 
-        public static void Draw()
+        internal void Draw()
         {
             foreach(GameObject go in ObjectList)
             {
                 go.Draw();
             }
 
-            Graphics.Draw();
+            _graphics.Draw();
         }
 
-        internal static void Dispose()
+        internal void Dispose()
         {
-            Graphics.Dispose();
+            _graphics.Dispose();
         }
     }
 }
