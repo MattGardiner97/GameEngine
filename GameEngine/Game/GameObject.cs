@@ -62,17 +62,19 @@ namespace GameEngine
             return false;
         }
 
-        public void AddComponent<T>() where T : Component
+        public T AddComponent<T>() where T : Component
         {
             if (ComponentExists<T>())
-                return;
+                return null;
 
-            Component c = Activator.CreateInstance<T>();
-            _components.Add(c);
+            Component newComponent = Activator.CreateInstance<T>();
+            _components.Add(newComponent);
 
-            c.GameObject = this;
+            newComponent.GameObject = this;
 
-            c.Start();
+            newComponent.Start();
+
+            return (T)newComponent;
         }
 
         public T GetComponeont<T>() where T : Component

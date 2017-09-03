@@ -69,5 +69,15 @@ namespace GameEngine.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] UIShader {
+            get {
+                object obj = ResourceManager.GetObject("UIShader", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

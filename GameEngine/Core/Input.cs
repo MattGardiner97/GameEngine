@@ -16,6 +16,8 @@ namespace GameEngine
 
         private static DirectInput _di;
 
+        private static KeyboardUpdate[] stateArray;
+
         internal static void Init()
         {
             _di = new DirectInput();
@@ -51,7 +53,6 @@ namespace GameEngine
             }
         }
 
-        private static KeyboardUpdate[] stateArray;
 
         private static List<Key> _previousKeysDown = new List<Key>();
         private static List<Key> _currentKeysDown = new List<Key>();
@@ -79,6 +80,12 @@ namespace GameEngine
                 return true;
             }
             return false;
+        }
+
+        public static void Dispose()
+        {
+            Input._di.Dispose();
+            Input._keyboard.Dispose();
         }
 
         

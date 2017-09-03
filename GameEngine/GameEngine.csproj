@@ -42,6 +42,9 @@
     <Reference Include="SharpDX.Desktop, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.Desktop.4.0.1\lib\net45\SharpDX.Desktop.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.Direct2D1, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX.Direct3D11, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
     </Reference>
@@ -69,7 +72,10 @@
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\Graphics.cs" />
     <Compile Include="Core\Input.cs" />
+    <Compile Include="Core\ShaderManager.cs" />
     <Compile Include="Enums\PrimitiveType.cs" />
+    <Content Include="Resources\UIShader.hlsl" />
+    <Compile Include="Structures\Shader.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <Compile Include="Game\Components\Camera.cs" />
     <Compile Include="Game\Component.cs" />

@@ -12,13 +12,14 @@ namespace GameEngine
 {
     public class Mesh
     {
+
         public Vector4[] Vertices { get; set; }
-        public Vector4[] Colors { get; set; }
         public int[] Triangles { get; set; }
-        public Vector2[] UV { get; set; }
         public Transform Transform { get; set; }
 
         public Material Material { get; set; }
+
+        public Vector4[] InputElements { get { return this.Material.GetInputElements(this); } }
 
         public Mesh()
         {
@@ -92,14 +93,9 @@ namespace GameEngine
                     break;
             }
 
-            //colors = new Vector4[verts.Length];
-            //Random r = new Random();
-            //for (int i = 0; i < colors.Length; i++)
-            //    colors[i] = new Vector4(r.Next(0, 2), r.Next(0, 2), r.Next(0, 2), 1);
-
+            m.Material = new BasicMaterial();
             m.Vertices = verts;
             m.Triangles = tris;
-            m.Colors = colors;
 
             return m;
 
@@ -135,27 +131,11 @@ namespace GameEngine
                     break;
             }
 
+            m.Material = new BasicMaterial();
             m.Vertices = verts;
             m.Triangles = tris;
-            m.Colors = new Vector4[verts.Length];
-            Random r = new Random();
-            for (int i = 0; i < m.Colors.Length; i++)
-                m.Colors[i] = new Vector4(r.Next(0, 2), r.Next(0, 2), r.Next(0, 2), 1);
 
             return m;
-        }
-
-        public Vector4[] GetVertexData()
-        {
-            Vector4[] result = new Vector4[this.Vertices.Length * 2];
-
-            Random r = new Random();
-            for (int i = 0; i < this.Vertices.Length; i++)
-            {
-                result[i * 2] = this.Vertices[i];
-                result[i * 2 + 1] = this.Colors[i];
-            }
-            return result;
         }
 
     }

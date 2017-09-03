@@ -34,6 +34,7 @@ namespace GameEngine
         {
             Input.Init();
             _graphics.Init();
+            ShaderManager.Init(_graphics.GraphicsDevice);
         }
 
         public void Start()
@@ -70,18 +71,18 @@ namespace GameEngine
             Input.Update();
 
 
-            foreach(GameObject go in ObjectList)
+            foreach (GameObject go in ObjectList)
             {
                 go.Update();
             }
 
             timeSinceLastUpdate += Time.DeltaTime;
-            if(timeSinceLastUpdate > 0.25)
+            if (timeSinceLastUpdate > 0.25)
             {
                 UpdateFramerateCounter();
                 timeSinceLastUpdate = 0;
             }
-            
+
         }
 
         static float timeSinceLastUpdate = 0f;
@@ -93,7 +94,7 @@ namespace GameEngine
 
         internal void Draw()
         {
-            foreach(GameObject go in ObjectList)
+            foreach (GameObject go in ObjectList)
             {
                 go.Draw();
             }
@@ -104,6 +105,8 @@ namespace GameEngine
         internal void Dispose()
         {
             _graphics.Dispose();
+            ShaderManager.Dispose();
+            Input.Dispose();
         }
     }
 }
