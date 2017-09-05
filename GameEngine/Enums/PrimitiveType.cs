@@ -3,7 +3,8 @@
     public enum Primitive2D
     {
         Triangle,
-        Square
+        Square,
+        Plane
     }
 
     public enum Primitive3D

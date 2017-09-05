@@ -35,17 +35,16 @@ namespace GameEngine
             Input.Init();
             _graphics.Init();
             ShaderManager.Init(_graphics.GraphicsDevice);
+
+            
+            Camera.Init();
         }
 
         public void Start()
         {
             Time.Start();
 
-            _graphics.Start();
-
-            GameObject camera = new GameObject();
-            camera.AddComponent<Camera>();
-            Camera.MainCamera = camera.GetComponeont<Camera>();
+            _graphics.Start();   
         }
 
         public void Exit()
@@ -77,7 +76,7 @@ namespace GameEngine
             }
 
             timeSinceLastUpdate += Time.DeltaTime;
-            if (timeSinceLastUpdate > 0.25)
+            if (timeSinceLastUpdate > 1)
             {
                 UpdateFramerateCounter();
                 timeSinceLastUpdate = 0;

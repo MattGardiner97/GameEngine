@@ -45,7 +45,7 @@ namespace GameEngine
         private List<Mesh> _meshList = new List<Mesh>();
 
         //CAMERA DATA
-        public Vector3 CameraPosition = new Vector3(3, 3, -3);
+        public Vector3 CameraPosition = new Vector3(0, 2, -3f);
         public Vector3 CameraTarget = Vector3.Zero;
         internal Vector3 CameraUnitUp = Vector3.UnitY;
 
@@ -105,70 +105,6 @@ namespace GameEngine
             _factory = _swapChain.GetParent<Factory>();
             _factory.MakeWindowAssociation(_form.Handle, WindowAssociationFlags.IgnoreAll);
 
-            //Temp
-            //var _vsByteCode = ShaderBytecode.Compile(Properties.Resources.BasicShader.SubArray(3), "VS", "vs_4_0");
-            //_vertexShader = new VertexShader(_device, _vsByteCode);
-
-            //var _psByteCode = ShaderBytecode.Compile(Properties.Resources.BasicShader.SubArray(3), "PS", "ps_4_0");
-            //_pixelShader = new PixelShader(_device, _psByteCode);
-
-            //_signature = ShaderSignature.GetInputSignature(_vsByteCode);
-
-            //_layout = new InputLayout(_device, _signature, new InputElement[]
-            //{
-            //    new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0),
-            //    new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
-            //});
-            //Temp
-
-            //Temp UI shader
-        //    var _vsByteCode = ShaderBytecode.Compile(Properties.Resources.UIShader.SubArray(3), "VS", "vs_4_0");
-        //    _vertexShader = new VertexShader(_device, _vsByteCode);
-
-        //    var _psByteCode = ShaderBytecode.Compile(Properties.Resources.UIShader.SubArray(3), "PS", "ps_4_0");
-        //    _pixelShader = new PixelShader(_device, _psByteCode);
-
-        //    _signature = ShaderSignature.GetInputSignature(_vsByteCode);
-
-        //    _layout = new InputLayout(_device, _signature, new InputElement[]
-        //        {
-        //        new InputElement("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),
-        //        new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
-        //});
-
-            //Temp
-
-            //ShaderInformation.LoadAll();
-
-            //foreach (ShaderInformation si in ShaderInformation.ShaderInfoList)
-            //{
-            //    ShaderBytecode vsByteCode = ShaderBytecode.CompileFromFile(si.Filename, si.VertexShaderFunctionName, "vs_4_0");
-            //    _vertexShaderBytecodeList.Add(si.Name, vsByteCode);
-
-            //    VertexShader vs = new VertexShader(_device, vsByteCode);
-            //    _vertexShaderList.Add(si.Name, vs);
-
-            //    ShaderBytecode psByteCode = ShaderBytecode.CompileFromFile(si.Filename, si.PixelShaderFunctionName, "ps_4_0");
-            //    _pixelShaderBytecodeList.Add(si.Name, psByteCode);
-
-            //    PixelShader ps = new PixelShader(_device, psByteCode);
-            //    _pixelShaderList.Add(si.Name, ps);
-
-            //    ShaderSignature sig = ShaderSignature.GetInputSignature(vsByteCode);
-            //    _vertexShaderSignatureList.Add(si.Name, sig);
-
-
-            //    InputElement[] elements = new InputElement[si.InputElementCount];
-
-            //    for (int i = 0; i < si.InputElementCount; i++)
-            //    {
-            //        elements[i] = new InputElement();
-            //    }
-
-
-            //    InputLayout layout = new InputLayout(_device, vsByteCode, elements);
-            //}
-
             //Defines a constant buffer holding the WorldViewProj for use by the VertexShader
             _constantBuffer = new Buffer(_device, SharpDX.Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
 
@@ -224,29 +160,24 @@ namespace GameEngine
 
         internal void Draw()
         {
+            CameraPosition = Camera.MainCamera.Transform.WorldPosition;
+
+            
             _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
             _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 1000f);
-            _cameraWorld = Matrix.Identity;
-            _worldViewProj = _cameraWorld * _cameraView * _cameraProj;
+            //_cameraWorld = Matrix.Identity;
+            //_worldViewProj = _cameraWorld * _cameraView * _cameraProj;
 
-            _worldViewProj.Transpose();
-            _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
+            //_worldViewProj.Transpose();
+            //_context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
+            _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
 
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
-            //Vector4[] verts = new Vector4[]
-            //{
-            //    new Vector4(0,0,0,0),new Vector4(1,1,1,1),
-            //    new Vector4(0,1,0,0),new Vector4(1,1,1,1),
-            //    new Vector4(1,1,0,0),new Vector4(1,1,1,1)
-            //};
-
-            //Buffer _vBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, verts);
-            //_context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vBuffer, 32, 0));
-            //_context.Draw(3, 0);
-
-            //_vBuffer.Dispose();
+            //_context.VertexShader.Set(_meshList[0].Material.Shader.VertexShader);
+            //_context.PixelShader.Set(_meshList[0].Material.Shader.PixelShader);
+            //_context.InputAssembler.InputLayout = _meshList[0].Material.Shader.InputLayout;
 
             foreach (Mesh m in _meshList)
             {
@@ -273,7 +204,7 @@ namespace GameEngine
                 _worldViewProj.Transpose();
 
                 _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
-                _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
+                //_context.VertexShader.SetConstantBuffer(0, _constantBuffer);
                 #endregion                
 
                 Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, m.InputElements);

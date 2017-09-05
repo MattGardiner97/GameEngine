@@ -12,31 +12,17 @@ namespace GameEngine
     {
         private static Stopwatch _stopwatch = new Stopwatch();
 
-        private static float _deltaTime;
-        public static float DeltaTime
-        {
-            get
-            {
-                return _deltaTime;
-            }
-        }
+        public static float DeltaTime { get; private set; }
 
         public static void Start()
         {
             _stopwatch.Start();
         }
 
-        public static void WorkMethod()
-        {
-
-        }
-
         public static void Update()
         {
-            //1 second = 10000000 ticks
-
             _stopwatch.Stop();
-            _deltaTime = _stopwatch.ElapsedTicks / 10000000f;
+            DeltaTime = (float)_stopwatch.Elapsed.TotalSeconds;
             _stopwatch.Restart();
             
         }

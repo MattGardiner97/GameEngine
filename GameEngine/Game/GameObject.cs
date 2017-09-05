@@ -8,7 +8,8 @@ namespace GameEngine
 {
     public class GameObject
     {
-        private List<Component> _components = new List<Component>();
+        //private List<Component> _components = new List<Component>();
+        private Dictionary<Type,Component> _components = new Dictionary<Type, Component>();
 
         public string Name { get; set; }
         public Transform Transform { get { return GetComponeont<Transform>(); } }
@@ -32,14 +33,14 @@ namespace GameEngine
         }
         public void Update()
         {
-            foreach (Component c in _components)
+            foreach (Component c in _components.Values)
             {
                 c.Update();
             }
         }
         public void Draw()
         {
-            foreach (Component c in _components)
+            foreach (Component c in _components.Values)
             {
                 c.Draw();
             }
@@ -47,7 +48,7 @@ namespace GameEngine
 
         public void Dispose()
         {
-            foreach (Component c in _components)
+            foreach (Component c in _components.Values)
             {
                 c.Dispose();
             }
@@ -55,11 +56,7 @@ namespace GameEngine
 
         private bool ComponentExists<T>()
         {
-            for (int i = 0; i < _components.Count; i++)
-                if (_components[i] is T)
-                    return true;
-
-            return false;
+            return _components.ContainsKey(typeof(T));
         }
 
         public T AddComponent<T>() where T : Component
@@ -68,7 +65,7 @@ namespace GameEngine
                 return null;
 
             Component newComponent = Activator.CreateInstance<T>();
-            _components.Add(newComponent);
+            _components.Add(typeof(T),newComponent);
 
             newComponent.GameObject = this;
 
@@ -79,7 +76,7 @@ namespace GameEngine
 
         public T GetComponeont<T>() where T : Component
         {
-            foreach (Component c in _components)
+            foreach (Component c in _components.Values)
             {
                 if (c is T)
                 {

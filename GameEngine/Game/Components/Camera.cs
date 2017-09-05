@@ -8,9 +8,16 @@ namespace GameEngine
 {
     public class Camera : Component
     {
-        public static Camera MainCamera
+        public static GameObject MainCamera
         {
             get;set;
+        }
+
+        public static void Init()
+        {
+            GameObject camera = new GameObject();
+            camera.AddComponent<Camera>();
+            Camera.MainCamera = camera;
         }
 
     }

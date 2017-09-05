@@ -34,6 +34,7 @@ namespace GameEngine
             stateArray = _keyboard.GetBufferedData();
 
             _previousKeysDown = _currentKeysDown;
+            _currentKeysDown = new List<Key>();
             foreach (KeyboardUpdate state in stateArray)
             {
                 if(state.IsPressed == true)

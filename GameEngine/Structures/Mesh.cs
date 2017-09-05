@@ -129,6 +129,16 @@ namespace GameEngine
                     };
                     tris = new int[] { 0, 1, 2, 0, 2, 3 };
                     break;
+                case Primitive2D.Plane:
+                    verts = new Vector4[]
+                    {
+                        new Vector4(-0.5f,0,0.5f,1f),//Far left
+                        new Vector4(0.5f,0,0.5f,1f),//Far right
+                        new Vector4(0.5f,0,-0.5f,1f),//Near right
+                        new Vector4(-0.5f,0,-0.5f,1f)//Near left
+                    };
+                    tris = new int[] { 0, 2, 3, 0, 1, 2 };
+                    break;
             }
 
             m.Material = new BasicMaterial();
