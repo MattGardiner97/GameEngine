@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 
 using System.Text;
@@ -21,11 +22,10 @@ namespace GameEngine
                 _mesh.Transform = GameObject.Transform;
             }
         }
+        public Material Material { get; set; } = new BasicMaterial();
 
-        public override void Draw()
-        {
-            Graphics.Current.DrawMesh(_mesh);
-        }
+        public Vector4[] InputElements { get { return this.Material.GetInputElements(this.Mesh); } }
+
 
     }
 }

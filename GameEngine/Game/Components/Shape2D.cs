@@ -31,12 +31,6 @@ namespace GameEngine
                 _mesh.Transform = GameObject.Transform;
             }
         }
-
-        public override void Draw()
-        {
-            //Graphics.Batch(Mesh);
-        }
-
     }
 
     

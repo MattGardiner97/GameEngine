@@ -17,9 +17,7 @@ namespace GameEngine
         public int[] Triangles { get; set; }
         public Transform Transform { get; set; }
 
-        public Material Material { get; set; }
 
-        public Vector4[] InputElements { get { return this.Material.GetInputElements(this); } }
 
         public Mesh()
         {
@@ -92,8 +90,6 @@ namespace GameEngine
                     };
                     break;
             }
-
-            m.Material = new BasicMaterial();
             m.Vertices = verts;
             m.Triangles = tris;
 
@@ -141,7 +137,6 @@ namespace GameEngine
                     break;
             }
 
-            m.Material = new BasicMaterial();
             m.Vertices = verts;
             m.Triangles = tris;
 

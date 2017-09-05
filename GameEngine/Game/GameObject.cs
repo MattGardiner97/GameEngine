@@ -8,6 +8,8 @@ namespace GameEngine
 {
     public class GameObject
     {
+        internal static List<GameObject> ObjectList = new List<GameObject>();
+
         //private List<Component> _components = new List<Component>();
         private Dictionary<Type,Component> _components = new Dictionary<Type, Component>();
 
@@ -23,7 +25,7 @@ namespace GameEngine
         {
             this.Name = name;
 
-            Engine.Current.ObjectList.Add(this);
+            ObjectList.Add(this);
             AddComponent<Transform>();
         }
 
@@ -36,13 +38,6 @@ namespace GameEngine
             foreach (Component c in _components.Values)
             {
                 c.Update();
-            }
-        }
-        public void Draw()
-        {
-            foreach (Component c in _components.Values)
-            {
-                c.Draw();
             }
         }
 
@@ -88,12 +83,40 @@ namespace GameEngine
 
         public static GameObject Find(string Name)
         {
-            for (int i = 0; i < Engine.Current.ObjectList.Count; i++)
-                if (Engine.Current.ObjectList[i].Name == Name)
-                    return Engine.Current.ObjectList[i];
+            for (int i = 0; i < ObjectList.Count; i++)
+                if (ObjectList[i].Name == Name)
+                    return ObjectList[i];
 
             return null;
             //return Engine.Current.ObjectList.First(x => x.Name == Name);
+        }
+
+        public static GameObject[] GetAllWithComponent<T>() where T : Component
+        {
+            GameObject[] result = new GameObject[ObjectList.Count];
+            int resultIndex = 0;
+            for (int i = 0; i < ObjectList.Count; i++)
+                if (ObjectList[i].GetComponeont<T>() != null)
+                    result[resultIndex++] = ObjectList[i];
+
+            Array.Resize(ref result, resultIndex);
+
+            return result;
+        }
+
+        public static T[] GetAllComponents<T>() where T : Component
+        {
+            T[] result = new T[ObjectList.Count];
+            int resultIndex = 0; 
+            for(int i = 0; i < ObjectList.Count;i++)
+            {
+                T comp = ObjectList[i].GetComponeont<T>();
+                if (comp != null)
+                    result[resultIndex++] = comp;
+            }
+
+            Array.Resize(ref result, resultIndex);
+            return result;
         }
     }
 }

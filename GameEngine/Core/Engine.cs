@@ -18,7 +18,7 @@ namespace GameEngine
         private Graphics _graphics;
 
         internal bool _finished { get; private set; } = false;
-        internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
+        //internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
 
         public bool Finished { get; private set; }
 
@@ -70,7 +70,7 @@ namespace GameEngine
             Input.Update();
 
 
-            foreach (GameObject go in ObjectList)
+            foreach (GameObject go in GameObject.ObjectList)
             {
                 go.Update();
             }
@@ -93,11 +93,6 @@ namespace GameEngine
 
         internal void Draw()
         {
-            foreach (GameObject go in ObjectList)
-            {
-                go.Draw();
-            }
-
             _graphics.Draw();
         }
 

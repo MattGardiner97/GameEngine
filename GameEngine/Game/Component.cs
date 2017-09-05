@@ -30,9 +30,5 @@ namespace GameEngine
         {
 
         }
-        public virtual void Draw()
-        {
-
-        }
     }
 }

@@ -42,7 +42,7 @@ namespace GameEngine
 
         private Buffer _constantBuffer;
 
-        private List<Mesh> _meshList = new List<Mesh>();
+        //private List<Mesh> _meshList = new List<Mesh>();
 
         //CAMERA DATA
         public Vector3 CameraPosition = new Vector3(0, 2, -3f);
@@ -50,7 +50,7 @@ namespace GameEngine
         internal Vector3 CameraUnitUp = Vector3.UnitY;
 
         private Matrix _worldViewProj;
-        private Matrix _cameraWorld;
+        //private Matrix _cameraWorld;
         private Matrix _cameraView;
         private Matrix _cameraProj;
 
@@ -108,12 +108,8 @@ namespace GameEngine
             //Defines a constant buffer holding the WorldViewProj for use by the VertexShader
             _constantBuffer = new Buffer(_device, SharpDX.Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
 
-            //_context.InputAssembler.InputLayout = _layout;
             _context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-            //_context.VertexShader.Set(_vertexShader);
-            //Constant buffer containing the world-view-projection matrix
             _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
-            //_context.PixelShader.Set(_pixelShader);
 
             _backBuffer = Texture2D.FromSwapChain<Texture2D>(_swapChain, 0);
             _renderTargetView = new RenderTargetView(_device, _backBuffer);
@@ -153,10 +149,6 @@ namespace GameEngine
             };
         }
 
-        public void DrawMesh(Mesh m)
-        {
-            _meshList.Add(m);
-        }
 
         internal void Draw()
         {
@@ -165,38 +157,30 @@ namespace GameEngine
             
             _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
             _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 1000f);
-            //_cameraWorld = Matrix.Identity;
-            //_worldViewProj = _cameraWorld * _cameraView * _cameraProj;
-
-            //_worldViewProj.Transpose();
-            //_context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
-            _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
 
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
-            //_context.VertexShader.Set(_meshList[0].Material.Shader.VertexShader);
-            //_context.PixelShader.Set(_meshList[0].Material.Shader.PixelShader);
-            //_context.InputAssembler.InputLayout = _meshList[0].Material.Shader.InputLayout;
+            MeshRenderer[] _meshList = GameObject.GetAllComponents<MeshRenderer>();            
 
-            foreach (Mesh m in _meshList)
+            foreach (MeshRenderer mr in _meshList)
             {
-                if (m.Material == null)
+                if (mr.Material == null)
                     continue;
 
-                _context.VertexShader.Set(m.Material.Shader.VertexShader);
-                _context.PixelShader.Set(m.Material.Shader.PixelShader);
-                _context.InputAssembler.InputLayout = m.Material.Shader.InputLayout;
+                _context.VertexShader.Set(mr.Material.Shader.VertexShader);
+                _context.PixelShader.Set(mr.Material.Shader.PixelShader);
+                _context.InputAssembler.InputLayout = mr.Material.Shader.InputLayout;
 
                 #region Transformation
                 Matrix worldMatrix = Matrix.Identity;
 
-                Matrix rotX = Matrix.RotationX(m.Transform.Rotation.X);
-                Matrix rotY = Matrix.RotationY(m.Transform.Rotation.Y);
-                Matrix rotZ = Matrix.RotationZ(m.Transform.Rotation.Z);
+                Matrix rotX = Matrix.RotationX(mr.Transform.Rotation.X);
+                Matrix rotY = Matrix.RotationY(mr.Transform.Rotation.Y);
+                Matrix rotZ = Matrix.RotationZ(mr.Transform.Rotation.Z);
 
-                Matrix translation = Matrix.Translation(m.Transform.WorldPosition);
-                Matrix scale = Matrix.Scaling(m.Transform.Scale);
+                Matrix translation = Matrix.Translation(mr.Transform.WorldPosition);
+                Matrix scale = Matrix.Scaling(mr.Transform.Scale);
 
                 worldMatrix = translation * (rotX * rotY * rotZ) * scale;
 
@@ -204,23 +188,20 @@ namespace GameEngine
                 _worldViewProj.Transpose();
 
                 _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
-                //_context.VertexShader.SetConstantBuffer(0, _constantBuffer);
                 #endregion                
 
-                Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, m.InputElements);
-                Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, m.Triangles);
+                Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, mr.InputElements);
+                Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, mr.Mesh.Triangles);
 
                 _context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
                 _context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
 
-                _context.DrawIndexed(m.Triangles.Length, 0, 0);
+                _context.DrawIndexed(mr.Mesh.Triangles.Length, 0, 0);
 
                 _vertexBuffer.Dispose();
                 _indexBuffer.Dispose();
             }
             _swapChain.Present(0, PresentFlags.None);
-
-            _meshList.Clear();
         }
 
         internal void Start()
