@@ -26,5 +26,10 @@ namespace GameEngine
         {
             this.Shader = shader;
         }
+
+        internal void Dispose()
+        {
+            Shader.Dispose();
+        }
     }
 }

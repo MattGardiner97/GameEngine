@@ -153,8 +153,8 @@ namespace GameEngine
         internal void Draw()
         {
             CameraPosition = Camera.MainCamera.Transform.WorldPosition;
+            CameraTarget = Camera.MainCamera.Transform.Forward + CameraPosition;
 
-            
             _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
             _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 1000f);
 

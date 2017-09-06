@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameEngine.Utilities
 {
-    public static class ArrayExtensions
+    internal static class ArrayExtensions
     {
         public static T[] SubArray<T>(this T[] src, int Offset)
         {

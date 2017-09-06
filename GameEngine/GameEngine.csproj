@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Debug.cs" />
     <Compile Include="Core\Engine.cs" />
     <Compile Include="Core\Graphics.cs" />
     <Compile Include="Core\Input.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Core\ShaderManager.cs" />
     <Compile Include="Enums\PrimitiveType.cs" />
     <Content Include="Resources\UIShader.hlsl" />
+    <Compile Include="Structures\Cursor.cs" />
     <Compile Include="Structures\RayCastHit.cs" />
     <Compile Include="Structures\Shader.cs" />
     <Compile Include="Utilities\Extensions.cs" />
@@ -96,8 +98,7 @@
     <Compile Include="Structures\Materials\BasicMaterial.cs" />
     <Compile Include="Structures\Mesh.cs" />
     <Compile Include="Structures\VertexColorElement.cs" />
-    <Compile Include="Utilities\Math.cs" />
-    <Compile Include="Utilities\ShaderInformation.cs" />
+    <Compile Include="Utilities\MathHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\BasicShader.hlsl" />

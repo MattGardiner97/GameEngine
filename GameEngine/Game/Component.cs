@@ -18,7 +18,7 @@ namespace GameEngine
             }
         }
 
-        public virtual void Dispose()
+        internal virtual void Dispose()
         {
 
         }
