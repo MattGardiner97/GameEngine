@@ -14,7 +14,7 @@ namespace GameEngine
         private Dictionary<Type,Component> _components = new Dictionary<Type, Component>();
 
         public string Name { get; set; }
-        public Transform Transform { get { return GetComponeont<Transform>(); } }
+        public Transform Transform { get { return GetComponent<Transform>(); } }
         public GameObject Parent { get; set; }
 
         public GameObject() : this("Gameobject")
@@ -69,7 +69,7 @@ namespace GameEngine
             return (T)newComponent;
         }
 
-        public T GetComponeont<T>() where T : Component
+        public T GetComponent<T>() where T : Component
         {
             foreach (Component c in _components.Values)
             {
@@ -96,7 +96,7 @@ namespace GameEngine
             GameObject[] result = new GameObject[ObjectList.Count];
             int resultIndex = 0;
             for (int i = 0; i < ObjectList.Count; i++)
-                if (ObjectList[i].GetComponeont<T>() != null)
+                if (ObjectList[i].GetComponent<T>() != null)
                     result[resultIndex++] = ObjectList[i];
 
             Array.Resize(ref result, resultIndex);
@@ -110,7 +110,7 @@ namespace GameEngine
             int resultIndex = 0; 
             for(int i = 0; i < ObjectList.Count;i++)
             {
-                T comp = ObjectList[i].GetComponeont<T>();
+                T comp = ObjectList[i].GetComponent<T>();
                 if (comp != null)
                     result[resultIndex++] = comp;
             }

@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 using SharpDX;
 
-using Math = GameEngine.Utilities.Math;
+using Math = GameEngine.Utilities.MathHelper;
 
 using GameEngine.Utilities;
 using System.Timers;
+using GameEngine.Structures;
 
 namespace GameEngine
 {
@@ -21,6 +22,7 @@ namespace GameEngine
         //internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
 
         public bool Finished { get; private set; }
+        
 
         public static Engine Current { get; private set; }
 
@@ -68,27 +70,13 @@ namespace GameEngine
         {
             Time.Update();
             Input.Update();
-
+            Debug.Update();
+            Cursor.Update();
 
             foreach (GameObject go in GameObject.ObjectList)
             {
                 go.Update();
             }
-
-            timeSinceLastUpdate += Time.DeltaTime;
-            if (timeSinceLastUpdate > 1)
-            {
-                UpdateFramerateCounter();
-                timeSinceLastUpdate = 0;
-            }
-
-        }
-
-        static float timeSinceLastUpdate = 0f;
-        internal void UpdateFramerateCounter()
-        {
-            int fps = (int)(1 / Time.DeltaTime);
-            _graphics.Form.Text = $"GameEngine (FPS: {fps.ToString()})";
         }
 
         internal void Draw()
@@ -101,6 +89,11 @@ namespace GameEngine
             _graphics.Dispose();
             ShaderManager.Dispose();
             Input.Dispose();
+        }
+
+        public void WriteConsole(string Message)
+        {
+            Console.WriteLine(Message);
         }
     }
 }
