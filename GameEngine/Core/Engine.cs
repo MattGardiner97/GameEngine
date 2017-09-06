@@ -90,10 +90,5 @@ namespace GameEngine
             ShaderManager.Dispose();
             Input.Dispose();
         }
-
-        public void WriteConsole(string Message)
-        {
-            Console.WriteLine(Message);
-        }
     }
 }
