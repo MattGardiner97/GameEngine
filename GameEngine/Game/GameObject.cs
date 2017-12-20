@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using System.Text;
 using System.Threading.Tasks;
@@ -9,16 +10,18 @@ namespace GameEngine
     public class GameObject
     {
         private static List<GameObject> ObjectList = new List<GameObject>();
+        private static List<MeshRenderer> _meshRenderers = new List<MeshRenderer>();
+        private static MeshRenderer[] _rendererCache;
 
         //private List<Component> _components = new List<Component>();
-        private Dictionary<Type, Component> _components = new Dictionary<Type, Component>();
+        private List<Component> _components = new List<Component>();
 
         #region Properties
         public string Name { get; set; }
         public Transform Transform { get { return GetComponent<Transform>(); } }
         public GameObject Parent { get; set; }
         public Layer Layer { get; private set; }
-#endregion
+        #endregion
 
         #region Constructors
         public GameObject() : this("Gameobject")
@@ -43,7 +46,7 @@ namespace GameEngine
         }
         public void Update()
         {
-            foreach (Component c in _components.Values)
+            foreach (Component c in _components)
             {
                 c.Update();
             }
@@ -51,7 +54,7 @@ namespace GameEngine
 
         public void Dispose()
         {
-            foreach (Component c in _components.Values)
+            foreach (Component c in _components)
             {
                 c.Dispose();
             }
@@ -59,7 +62,7 @@ namespace GameEngine
 
         public bool HasComponent<T>()
         {
-            return _components.ContainsKey(typeof(T));
+            return _components.Any(x => x.GetType() == typeof(T));
         }
 
         public T AddComponent<T>() where T : Component
@@ -68,7 +71,13 @@ namespace GameEngine
                 return null;
 
             Component newComponent = Activator.CreateInstance<T>();
-            _components.Add(typeof(T), newComponent);
+            _components.Add(newComponent);
+
+            if (typeof(T) == typeof(MeshRenderer))
+            {
+                _meshRenderers.Add((MeshRenderer)newComponent);
+                _rendererCache = _meshRenderers.ToArray();
+            }
 
             newComponent.GameObject = this;
 
@@ -79,7 +88,7 @@ namespace GameEngine
 
         public T GetComponent<T>() where T : Component
         {
-            foreach (Component c in _components.Values)
+            foreach (Component c in _components)
             {
                 if (c is T)
                 {
@@ -140,6 +149,11 @@ namespace GameEngine
         public static GameObject[] GetAllObjects()
         {
             return ObjectList.ToArray();
+        }
+
+        public static MeshRenderer[] GetAllMeshRenderers()
+        {
+            return _rendererCache;
         }
 
         public static void UpdateAll()

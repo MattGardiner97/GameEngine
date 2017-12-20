@@ -131,6 +131,19 @@ namespace GameEngine
             _depthView = new DepthStencilView(_device, _depthBuffer);
 
             _context.Rasterizer.SetViewport(new Viewport(0, 0, Form.ClientSize.Width, Form.ClientSize.Height, 0.0f, 1.0f));
+            _context.Rasterizer.State = new RasterizerState(_device, new RasterizerStateDescription()
+            {
+                CullMode = CullMode.Back,
+                DepthBias = 0,
+                DepthBiasClamp = 0,
+                FillMode = FillMode.Solid,
+                IsAntialiasedLineEnabled = false,
+                IsDepthClipEnabled = true,
+                IsFrontCounterClockwise = false,
+                IsMultisampleEnabled = true,
+                IsScissorEnabled = false,
+                SlopeScaledDepthBias = 0
+            });
 
             _context.OutputMerger.SetTargets(_depthView, _renderTargetView);
 
@@ -149,7 +162,6 @@ namespace GameEngine
             };
         }
 
-
         internal void Draw()
         {
             CameraPosition = Camera.MainCamera.Transform.WorldPosition;
@@ -157,38 +169,61 @@ namespace GameEngine
             CameraTarget = Camera.MainCamera.Transform.Forward;
 
             _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
-            _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 1000f);
+            _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 100f);
+
+            Matrix viewProj = _cameraView * _cameraProj;
 
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
-            MeshRenderer[] _meshList = GameObject.GetAllComponents<MeshRenderer>();            
+            MeshRenderer[] _meshList = GameObject.GetAllMeshRenderers();
 
+            BoundingFrustum bf = new BoundingFrustum(viewProj);
+
+            VertexShader lastVertexShader = null;
+            PixelShader lastPixelShader = null;
+            InputLayout lastInputLayout = null;
             foreach (MeshRenderer mr in _meshList)
             {
+                if (MathHelper.CalculateDistance(mr.Transform.Position, CameraPosition) > 100)
+                    continue;
+
                 if (mr.Material == null)
                     continue;
 
-                if (MathHelper.CalculateDistance(CameraPosition, mr.Transform.WorldPosition) > 50)
+                Vector4[] oldVerts = mr.Mesh.Vertices;
+                Vector3 pos = mr.Transform.Position;
+                bool shouldDraw = false;
+                for(int i = 0; i< oldVerts.Length;i++)
+                {
+                    if (bf.Contains(pos + (Vector3)oldVerts[i]) != ContainmentType.Disjoint)
+                    {
+                        shouldDraw = true;
+                        break;
+                    }
+                }
+
+                if (shouldDraw == false)
                     continue;
 
-                _context.VertexShader.Set(mr.Material.Shader.VertexShader);
-                _context.PixelShader.Set(mr.Material.Shader.PixelShader);
-                _context.InputAssembler.InputLayout = mr.Material.Shader.InputLayout;
+
+                if (lastVertexShader != mr.Material.Shader.VertexShader)
+                {
+                    _context.VertexShader.Set(mr.Material.Shader.VertexShader);
+                    lastVertexShader = mr.Material.Shader.VertexShader;
+                }
+                if (lastPixelShader != mr.Material.Shader.PixelShader)
+                {
+                    _context.PixelShader.Set(mr.Material.Shader.PixelShader);
+                    lastPixelShader = mr.Material.Shader.PixelShader;
+                }
+                if (lastInputLayout != mr.Material.Shader.InputLayout)
+                {
+                    _context.InputAssembler.InputLayout = mr.Material.Shader.InputLayout;
+                    lastInputLayout = mr.Material.Shader.InputLayout;
+                }
 
                 #region Transformation
-                //Matrix worldMatrix = Matrix.Identity;
-
-                //Matrix rotX = Matrix.RotationX(mr.Transform.Rotation.X);
-                //Matrix rotY = Matrix.RotationY(mr.Transform.Rotation.Y);
-                //Matrix rotZ = Matrix.RotationZ(mr.Transform.Rotation.Z);
-
-                //Matrix translation = Matrix.Translation(mr.Transform.WorldPosition);
-                //Matrix scale = Matrix.Scaling(mr.Transform.Scale);
-
-                //worldMatrix = translation * (rotX * rotY * rotZ) * scale;
-
-                //_worldViewProj = worldMatrix * _cameraView * _cameraProj;
                 _worldViewProj = mr.Transform.WorldMatrix * _cameraView * _cameraProj;
                 _worldViewProj.Transpose();
 
