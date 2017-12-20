@@ -17,13 +17,68 @@ namespace GameEngine
         public int[] Triangles { get; set; }
         public Transform Transform { get; set; }
 
-
+        public Vector3 Size { get; private set; }
+        public Vector3 Extents { get; private set; }
+        public Vector3 OriginNearPoint { get; private set; }
+        public Vector3 OriginFarPoint { get; private set; }
 
         public Mesh()
         {
 
         }
 
+        public void CalculateBounds()
+        {
+            float lowX = float.MaxValue;
+            float lowY = float.MaxValue;
+            float lowZ = float.MaxValue;
+            float highX = float.MinValue;
+            float highY = float.MinValue;
+            float highZ = float.MinValue;
+
+            float shortestDistance = float.MaxValue;
+            float farthestDistance = float.MinValue;
+            Vector3 shortestPoint = Vector3.Zero;
+            Vector3 farthestPoint = Vector3.Zero;
+
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                Vector3 v = (Vector3)Vertices[i];
+
+                float distance = MathHelper.CalculateDistance(Transform.WorldPosition, v);
+
+                if(distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    shortestPoint = v;
+                }
+                else if(distance > farthestDistance)
+                {
+                    farthestDistance = distance;
+                    farthestPoint = v;
+                }
+
+                if (v.X < lowX)
+                    lowX = v.X;
+                if (v.X > highX)
+                    highX = v.X;
+                if (v.Y < lowY)
+                    lowY = v.Y;
+                if (v.Y > highY)
+                    highY = v.Y;
+                if (v.Z < lowZ)
+                    lowZ = v.Z;
+                if (v.Z > highZ)
+                    highZ = v.Z;
+            }
+
+            Size = new Vector3(Math.Abs(highX - lowX), Math.Abs(highY - lowY), Math.Abs(highZ - lowZ));
+            Extents = new Vector3(Size.X / 2, Size.Y / 2, Size.Z / 2);
+            OriginNearPoint = shortestPoint;
+            OriginFarPoint = farthestPoint;
+        }
+
+        #region Statics
         public static Mesh From3DPrimitive(Primitive3D type)
         {
             Mesh m = new Mesh();
@@ -142,6 +197,7 @@ namespace GameEngine
 
             return m;
         }
+        #endregion
 
     }
 }

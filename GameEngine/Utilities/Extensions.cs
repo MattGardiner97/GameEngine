@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,14 @@ namespace GameEngine.Utilities
             Buffer.BlockCopy(src, Offset, result, 0, Count);
             return result;
         }
+    }
 
+    internal static class VectorExtensions
+    {
+        public static Vector3 ToRadians(this Vector3 value)
+        {
+            float rFactor = (float)Math.PI / 180f;
+            return new Vector3(value.X * rFactor, value.Y * rFactor, value.Z * rFactor);
+        }
     }
 }

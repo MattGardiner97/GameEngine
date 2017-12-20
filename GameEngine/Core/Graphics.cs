@@ -153,7 +153,8 @@ namespace GameEngine
         internal void Draw()
         {
             CameraPosition = Camera.MainCamera.Transform.WorldPosition;
-            CameraTarget = Camera.MainCamera.Transform.Forward + CameraPosition;
+            //var x = Camera.MainCamera.Transform.RotationMatrix * Matrix.Translation(Vector3.ForwardLH);
+            CameraTarget = Camera.MainCamera.Transform.Forward;
 
             _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
             _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 1000f);
@@ -168,23 +169,27 @@ namespace GameEngine
                 if (mr.Material == null)
                     continue;
 
+                if (MathHelper.CalculateDistance(CameraPosition, mr.Transform.WorldPosition) > 50)
+                    continue;
+
                 _context.VertexShader.Set(mr.Material.Shader.VertexShader);
                 _context.PixelShader.Set(mr.Material.Shader.PixelShader);
                 _context.InputAssembler.InputLayout = mr.Material.Shader.InputLayout;
 
                 #region Transformation
-                Matrix worldMatrix = Matrix.Identity;
+                //Matrix worldMatrix = Matrix.Identity;
 
-                Matrix rotX = Matrix.RotationX(mr.Transform.Rotation.X);
-                Matrix rotY = Matrix.RotationY(mr.Transform.Rotation.Y);
-                Matrix rotZ = Matrix.RotationZ(mr.Transform.Rotation.Z);
+                //Matrix rotX = Matrix.RotationX(mr.Transform.Rotation.X);
+                //Matrix rotY = Matrix.RotationY(mr.Transform.Rotation.Y);
+                //Matrix rotZ = Matrix.RotationZ(mr.Transform.Rotation.Z);
 
-                Matrix translation = Matrix.Translation(mr.Transform.WorldPosition);
-                Matrix scale = Matrix.Scaling(mr.Transform.Scale);
+                //Matrix translation = Matrix.Translation(mr.Transform.WorldPosition);
+                //Matrix scale = Matrix.Scaling(mr.Transform.Scale);
 
-                worldMatrix = translation * (rotX * rotY * rotZ) * scale;
+                //worldMatrix = translation * (rotX * rotY * rotZ) * scale;
 
-                _worldViewProj = worldMatrix * _cameraView * _cameraProj;
+                //_worldViewProj = worldMatrix * _cameraView * _cameraProj;
+                _worldViewProj = mr.Transform.WorldMatrix * _cameraView * _cameraProj;
                 _worldViewProj.Transpose();
 
                 _context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
@@ -203,13 +208,5 @@ namespace GameEngine
             }
             _swapChain.Present(0, PresentFlags.None);
         }
-
-        internal void Start()
-        {
-            RenderLoop.Run(_form, _parentEngine.EngineLoop);
-        }
-
-
-
     }
 }

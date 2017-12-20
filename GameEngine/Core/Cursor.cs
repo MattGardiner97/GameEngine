@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using SharpDX;
 
-namespace GameEngine.Structures
+namespace GameEngine
 {
     public static class Cursor
     {
@@ -44,7 +44,5 @@ namespace GameEngine.Structures
         {
             _locked = false;
         }
-
-
     }
 }

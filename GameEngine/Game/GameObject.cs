@@ -8,15 +8,19 @@ namespace GameEngine
 {
     public class GameObject
     {
-        internal static List<GameObject> ObjectList = new List<GameObject>();
+        private static List<GameObject> ObjectList = new List<GameObject>();
 
         //private List<Component> _components = new List<Component>();
-        private Dictionary<Type,Component> _components = new Dictionary<Type, Component>();
+        private Dictionary<Type, Component> _components = new Dictionary<Type, Component>();
 
+        #region Properties
         public string Name { get; set; }
         public Transform Transform { get { return GetComponent<Transform>(); } }
         public GameObject Parent { get; set; }
+        public Layer Layer { get; private set; }
+#endregion
 
+        #region Constructors
         public GameObject() : this("Gameobject")
         {
 
@@ -27,8 +31,12 @@ namespace GameEngine
 
             ObjectList.Add(this);
             AddComponent<Transform>();
-        }
 
+            this.Layer = Layer.SetObjectLayer(this, 0);
+        }
+        #endregion
+
+        #region Methods
         public void Start()
         {
 
@@ -49,18 +57,18 @@ namespace GameEngine
             }
         }
 
-        private bool ComponentExists<T>()
+        public bool HasComponent<T>()
         {
             return _components.ContainsKey(typeof(T));
         }
 
         public T AddComponent<T>() where T : Component
         {
-            if (ComponentExists<T>())
+            if (HasComponent<T>())
                 return null;
 
             Component newComponent = Activator.CreateInstance<T>();
-            _components.Add(typeof(T),newComponent);
+            _components.Add(typeof(T), newComponent);
 
             newComponent.GameObject = this;
 
@@ -81,6 +89,17 @@ namespace GameEngine
             return null;
         }
 
+        public void SetLayer(int LayerIndex)
+        {
+            this.Layer = Layer.SetObjectLayer(this, LayerIndex);
+        }
+        public void SetLayer(string LayerName)
+        {
+            this.Layer = Layer.SetObjectLayer(this, LayerName);
+        }
+        #endregion
+
+        #region StaticMethods
         public static GameObject Find(string Name)
         {
             for (int i = 0; i < ObjectList.Count; i++)
@@ -88,7 +107,6 @@ namespace GameEngine
                     return ObjectList[i];
 
             return null;
-            //return Engine.Current.ObjectList.First(x => x.Name == Name);
         }
 
         public static GameObject[] GetAllWithComponent<T>() where T : Component
@@ -107,8 +125,8 @@ namespace GameEngine
         public static T[] GetAllComponents<T>() where T : Component
         {
             T[] result = new T[ObjectList.Count];
-            int resultIndex = 0; 
-            for(int i = 0; i < ObjectList.Count;i++)
+            int resultIndex = 0;
+            for (int i = 0; i < ObjectList.Count; i++)
             {
                 T comp = ObjectList[i].GetComponent<T>();
                 if (comp != null)
@@ -118,5 +136,17 @@ namespace GameEngine
             Array.Resize(ref result, resultIndex);
             return result;
         }
+
+        public static GameObject[] GetAllObjects()
+        {
+            return ObjectList.ToArray();
+        }
+
+        public static void UpdateAll()
+        {
+            foreach (GameObject go in ObjectList)
+                go.Update();
+        }
+        #endregion
     }
 }
