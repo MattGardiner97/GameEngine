@@ -79,9 +79,11 @@
     <Compile Include="Core\Screen.cs" />
     <Compile Include="Core\ShaderManager.cs" />
     <Compile Include="Enums\PrimitiveType.cs" />
+    <Content Include="Resources\BasicInstanceShader.hlsl" />
     <Content Include="Resources\UIShader.hlsl" />
     <Compile Include="Structures\Collider.cs" />
     <Compile Include="Core\Cursor.cs" />
+    <Compile Include="Structures\Materials\BasicInstanceMaterial.cs" />
     <Compile Include="Structures\Ray.cs" />
     <Compile Include="Structures\RayCastHit.cs" />
     <Compile Include="Structures\Shader.cs" />

@@ -20,7 +20,7 @@ namespace GameEngine
     {
         internal Shader Shader { get; private set; }
 
-        internal abstract Vector4[] GetInputElements(Mesh mesh);
+        internal abstract Vector4[] GetInputElements(MeshRenderer mr);
 
         internal Material(Shader shader)
         {

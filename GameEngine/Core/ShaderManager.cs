@@ -22,6 +22,7 @@ namespace GameEngine
     internal static class ShaderManager
     {
         public static Shader BasicShader { get; private set; }
+        public static Shader BasicInstanceShader { get; private set; }
         public static Shader UIShader { get; private set; }
 
         internal static void Init(Device device)
@@ -48,10 +49,32 @@ namespace GameEngine
                 psByteCode.Dispose();
             }
 
+            //Basic Instance shader
+            {
+                byte[] trimmedBytes = Properties.Resources.BasicInstanceShader.SubArray(3);
+                var vsByteCode = ShaderBytecode.Compile(trimmedBytes, "VS", "vs_4_0", ShaderFlags.Debug);
+                VertexShader vs = new VertexShader(device, vsByteCode);
+                var psByteCode = ShaderBytecode.Compile(trimmedBytes, "PS", "ps_4_0");
+                PixelShader ps = new PixelShader(device, psByteCode);
+                InputLayout layout = new InputLayout(device, ShaderSignature.GetInputSignature(vsByteCode), new InputElement[]
+                {
+                    new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0,InputClassification.PerVertexData,0),
+
+                    new InputElement("INSTANCEPOS",0,Format.R32G32B32A32_Float,0,1,InputClassification.PerInstanceData,1),
+                    new InputElement("INSTANCECOL",0,Format.R32G32B32A32_Float,16,1,InputClassification.PerInstanceData,1)
+                });
+
+                Shader basicInstanceShader = new Shader(vs, ps, layout);
+                ShaderManager.BasicInstanceShader = basicInstanceShader;
+
+                vsByteCode.Dispose();
+                psByteCode.Dispose();
+            }
+
             //UI Shader
             {
                 byte[] trimmedBytes = Properties.Resources.UIShader.SubArray(3);
-                var vsByteCode = ShaderBytecode.Compile(trimmedBytes, "VS", "vs_4_0");
+                var vsByteCode = ShaderBytecode.Compile(trimmedBytes, "VS", "vs_4_0",ShaderFlags.Debug);
                 VertexShader vs = new VertexShader(device, vsByteCode);
                 var psByteCode = ShaderBytecode.Compile(trimmedBytes, "PS", "ps_4_0");
                 PixelShader ps = new PixelShader(device, psByteCode);

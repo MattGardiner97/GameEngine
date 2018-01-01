@@ -13,13 +13,15 @@ namespace GameEngine
     {
         public Color MainColor { get; set; } = Color.White;
 
-        internal override Vector4[] GetInputElements(Mesh mesh)
+        internal override Vector4[] GetInputElements(MeshRenderer mr)
         {
-            Vector4[] result = new Vector4[mesh.Vertices.Length * 2];
+            Mesh m = mr.Mesh;
+
+            Vector4[] result = new Vector4[m.Vertices.Length * 2];
             Vector4 color = new Vector4(MainColor.R, MainColor.G, MainColor.B, MainColor.A);
-            for (int i = 0; i < mesh.Vertices.Length; i++)
+            for (int i = 0; i < m.Vertices.Length; i++)
             {
-                result[i * 2] = mesh.Vertices[i];
+                result[i * 2] = m.Vertices[i];
                 result[i * 2 + 1] = color;
             }
 
