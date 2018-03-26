@@ -18,18 +18,23 @@ namespace GameEngine
 {
     public abstract class Material
     {
+        //Internal colletion of materials which each have DrawAll() called from Graphics.Draw()
+        internal static List<Material> _materialList = new List<Material>();
         internal Shader Shader { get; private set; }
 
-        internal abstract Vector4[] GetInputElements(MeshRenderer mr);
+        public abstract void DrawAll();
 
-        internal Material(Shader shader)
+        public abstract void AddMeshRenderer(MeshRenderer Renderer);
+        public abstract void RemoveMeshRenderer(MeshRenderer Renderer);
+
+        public Material(Shader shader)
         {
             this.Shader = shader;
+            _materialList.Add(this);
         }
 
         internal void Dispose()
         {
-            Shader.Dispose();
         }
     }
 }

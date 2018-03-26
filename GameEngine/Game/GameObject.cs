@@ -42,7 +42,6 @@ namespace GameEngine
         #region Methods
         public void Start()
         {
-
         }
         public void Update()
         {
@@ -156,6 +155,11 @@ namespace GameEngine
             return _rendererCache;
         }
 
+        public static void StartAll()
+        {
+            foreach (GameObject go in ObjectList)
+                go.Start();
+        }
         public static void UpdateAll()
         {
             foreach (GameObject go in ObjectList)

@@ -41,24 +41,20 @@ namespace GameEngine
         private Texture2D _depthBuffer;
         private DepthStencilView _depthView;
 
-        private Buffer _constantBuffer;
-        private Buffer _instanceConstantBuffer;
 
-        //private List<Mesh> _meshList = new List<Mesh>();
-
-        //CAMERA DATA
         public Vector3 CameraPosition = new Vector3(0, 2, -3f);
         public Vector3 CameraTarget = Vector3.Zero;
         internal Vector3 CameraUnitUp = Vector3.UnitY;
 
-        private Matrix _worldViewProj;
-        //private Matrix _cameraWorld;
-        private Matrix _cameraView;
-        private Matrix _cameraProj;
+        public Matrix WorldViewProj;
+        public Matrix CameraView;
+        public Matrix CameraProj;
 
         public RenderForm Form { get { return _form; } }
         public Color BackgroundColor { get; set; } = Color.Gray;
         public Device GraphicsDevice { get { return _device; } }
+
+        public float ZFarDistance { get; set; } = 200f;
 
         //Statics
         public static Graphics Current { get; private set; }
@@ -81,9 +77,6 @@ namespace GameEngine
             _backBuffer.Dispose();
             _depthBuffer.Dispose();
             _depthView.Dispose();
-
-            _constantBuffer.Dispose();
-            _instanceConstantBuffer.Dispose();
         }
 
         internal void Init()
@@ -114,11 +107,7 @@ namespace GameEngine
             _factory = _swapChain.GetParent<Factory>();
             _factory.MakeWindowAssociation(_form.Handle, WindowAssociationFlags.IgnoreAll);
 
-            //Defines a constant buffer holding the WorldViewProj for use by the VertexShader
-            _constantBuffer = new Buffer(_device, SharpDX.Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
-
             _context.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-            _context.VertexShader.SetConstantBuffer(0, _constantBuffer);
 
             _backBuffer = Texture2D.FromSwapChain<Texture2D>(_swapChain, 0);
             _renderTargetView = new RenderTargetView(_device, _backBuffer);
@@ -156,8 +145,6 @@ namespace GameEngine
 
             _context.OutputMerger.SetTargets(_depthView, _renderTargetView);
 
-            _instanceConstantBuffer = new Buffer(_device, SharpDX.Utilities.SizeOf<Matrix>(), ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0);
-
             //Called when the program is exiting
             _form.FormClosing += (sender, args) =>
             {
@@ -178,232 +165,162 @@ namespace GameEngine
             CameraPosition = Camera.MainCamera.Transform.WorldPosition;
             CameraTarget = Camera.MainCamera.Transform.Forward;
 
-            _cameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
-            _cameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, 100f);
-
-            Matrix viewProj = _cameraView * _cameraProj;
+            CameraView = Matrix.LookAtLH(CameraPosition, CameraTarget, CameraUnitUp);
+            CameraProj = Matrix.PerspectiveFovLH((float)(Math.PI / 4.0f), (float)(_form.ClientSize.Width / _form.ClientSize.Height), 1f, ZFarDistance);
+            WorldViewProj = CameraView * CameraProj;
 
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
-
-            #region Test
-            //DrawDynamic(viewProj);
-            DrawInstanced(viewProj);
-            #endregion
+            foreach (Material m in Material._materialList)
+                m.DrawAll();
 
             _swapChain.Present(0, PresentFlags.None);
         }
 
-        public class FastList<T>
+        //Public helpers
+        private Shader _currentShader;
+
+        public void SetShader(Shader shader)
         {
-            private T[] _arr;
-            private int _index = 0;
+            if (_currentShader == shader)
+                return;
 
-            public int Count { get { return _index; } }
+            _context.VertexShader.Set(shader.VertexShader);
+            _context.PixelShader.Set(shader.PixelShader);
+            _context.InputAssembler.InputLayout = shader.InputLayout;
+            _currentShader = shader;
+        }
+        public Buffer CreateVertexBuffer(Vector4[] Data) { return Buffer.Create(_device, BindFlags.VertexBuffer, Data); }
+        public Buffer CreateVertexBuffer<T>(T[] Data) where T : struct
+        {
+            return Buffer.Create(_device, BindFlags.VertexBuffer, Data);
+        }
+        public Buffer CreateIndexBuffer(int[] Data) { return Buffer.Create(_device, BindFlags.IndexBuffer, Data); }
+        public Buffer CreateConstantBuffer(int Size) { return new Buffer(_device, Size, ResourceUsage.Default, BindFlags.ConstantBuffer, CpuAccessFlags.None, ResourceOptionFlags.None, 0); }
+        public void UpdateConstantBuffer<T>(ref T Data, Buffer ConstantBuffer) where T : struct
+        {
+            _context.UpdateSubresource(ref Data, ConstantBuffer);
+        }
+        public void UpdateConstantBuffer<T>(T[] Data, Buffer ConstantBuffer) where T :struct
+        {
+            _context.UpdateSubresource(Data, ConstantBuffer);
+        }
+        public void SetIndexBuffer(Buffer Buffer) { _context.InputAssembler.SetIndexBuffer(Buffer, Format.R32_UInt, 0); }
+        public void SetVertexBuffers(VertexBufferBinding[] Buffers) { _context.InputAssembler.SetVertexBuffers(0, Buffers); }
+        public void SetConstantBuffer(int BufferIndex, Buffer ConstantBuffer) { _context.VertexShader.SetConstantBuffer(BufferIndex,ConstantBuffer); }
 
-            public FastList() : this(1)
-            {
+        //Public Draw calls
+        public void DrawIndexed(int IndexCount, int StartIndexLocation, int BaseVertexLocation)
+        {
+            _context.DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
+        }
+        public void DrawIndexedInstanced(int IndexCount, int InstanceCount,int StartIndexLocation, int BaseVertexLocation, int StartInstanceLocation)
+        {
+            _context.DrawIndexedInstanced(IndexCount,InstanceCount, 0, 0, 0);
 
-            }
-
-            public FastList(int Capacity)
-            {
-                _arr = new T[Capacity];
-            }
-
-            public void Clear()
-            {
-                _index = 0;
-            }
-
-            public void Add(T Value)
-            {
-                if (_index >= _arr.Length)
-                {
-                    T[] old = _arr;
-                    _arr = new T[old.Length * 2];
-                    Array.Copy(old, _arr, old.Length);
-                }
-                _arr[_index++] = Value;
-            }
-
-            public void AddRange(T[] Values)
-            {
-                if (_index + Values.Length >= _arr.Length)
-                {
-                    int newSize = (_arr.Length + Values.Length) * 2;
-                    T[] old = _arr;
-                    _arr = new T[newSize];
-                    Array.Copy(old, _arr, old.Length);
-                }
-                Array.Copy(Values, 0, _arr, _index, Values.Length);
-                _index += Values.Length;
-            }
-            public void AddRange(IEnumerable<T> Values)
-            {
-                foreach (T v in Values)
-                    Add(v);
-            }
-
-            public T[] ToArray()
-            {
-                return _arr;
-            }
         }
 
-        FastList<Vector4> vertList = new FastList<Vector4>();
-        FastList<int> triList = new FastList<int>();
-        int triMax = 0;
-        private void DrawDynamic(Matrix viewProj)
-        {
-            vertList.Clear();
-            triList.Clear();
-            triMax = 0;
+        //FastList<Vector4> vertList = new FastList<Vector4>();
+        //FastList<int> triList = new FastList<int>();
+        //int triMax = 0;
+        //private void DrawDynamic(Matrix viewProj)
+        //{
+        //    vertList.Clear();
+        //    triList.Clear();
+        //    triMax = 0;
 
-            Structures.Shader s = ShaderManager.BasicShader;
-            _context.VertexShader.Set(s.VertexShader);
-            _context.PixelShader.Set(s.PixelShader);
-            _context.InputAssembler.InputLayout = s.InputLayout;
+        //    Structures.Shader s = ShaderManager.BasicShader;
+        //    _context.VertexShader.Set(s.VertexShader);
+        //    _context.PixelShader.Set(s.PixelShader);
+        //    _context.InputAssembler.InputLayout = s.InputLayout;
 
-            MeshRenderer[] _meshArray = MeshRenderer.GetDynamicMeshRenderers();
+        //    //MeshRenderer[] _meshArray = MeshRenderer.GetDynamicMeshRenderers();
 
-            BoundingFrustum bf = new BoundingFrustum(viewProj);
-
-
-
-            foreach (MeshRenderer mr in _meshArray)
-            {
-                if (MathHelper.CalculateDistance(mr.Transform.Position, CameraPosition) > 100)
-                    continue;
-
-                if (mr.Material == null)
-                    continue;
-
-                Vector4[] oldVerts = mr.Mesh.Vertices;
-                Vector3 pos = mr.Transform.Position;
-                bool shouldDraw = false;
-                for (int i = 0; i < oldVerts.Length; i++)
-                {
-                    if (bf.Contains(pos + (Vector3)oldVerts[i]) != ContainmentType.Disjoint)
-                    {
-                        shouldDraw = true;
-                        break;
-                    }
-                }
-
-                if (shouldDraw == false)
-                    continue;
-
-                #region Transformation
-                _worldViewProj = mr.Transform.WorldMatrix * _cameraView * _cameraProj;
-                //_worldViewProj.Transpose();
-
-                Vector4[] elems = mr.InputElements;
-
-                for (int i = 0; i < elems.Length; i += 2)
-                {
-                    Vector4 elem = elems[i];
-
-                    Matrix m = new Matrix();
-                    m.Row1 = elem;
-
-                    Vector4 transformed = (m * _worldViewProj).Row1;
-                    vertList.Add(transformed);
-                    vertList.Add(elems[i + 1]);
-                }
-
-                int[] triangles = mr.Mesh.Triangles;
-                triangles = triangles.Select(x => x + triMax).ToArray();
-                triMax += mr.Mesh.Triangles.Max() + 1;
-                triList.AddRange(triangles);
-                //foreach (int i in triangles)
-                //    triList.Add(i);
-                //foreach (int i in triangles)
-                //    Add(ref triList, i, triListIndex++);
+        //    BoundingFrustum bf = new BoundingFrustum(viewProj);
 
 
 
-                //_context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
-                #endregion                
+        //    foreach (MeshRenderer mr in _meshArray)
+        //    {
+        //        if (MathHelper.CalculateDistance(mr.Transform.Position, CameraPosition) > 100)
+        //            continue;
 
-                //Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, elems);
-                //Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, mr.Mesh.Triangles);
+        //        if (mr.Material == null)
+        //            continue;
 
-                //_context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
-                //_context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
+        //        Vector4[] oldVerts = mr.Mesh.Vertices;
+        //        Vector3 pos = mr.Transform.Position;
+        //        bool shouldDraw = false;
+        //        for (int i = 0; i < oldVerts.Length; i++)
+        //        {
+        //            if (bf.Contains(pos + (Vector3)oldVerts[i]) != ContainmentType.Disjoint)
+        //            {
+        //                shouldDraw = true;
+        //                break;
+        //            }
+        //        }
 
-                //_context.DrawIndexed(mr.Mesh.Triangles.Length, 0, 0);
+        //        if (shouldDraw == false)
+        //            continue;
 
-                //_vertexBuffer.Dispose();
-                //_indexBuffer.Dispose();
-            }
+        //        #region Transformation
+        //        WorldViewProj = mr.Transform.WorldMatrix * CameraView * CameraProj;
+        //        //_worldViewProj.Transpose();
 
-            if (vertList.Count != 0)
-            {
-                Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, vertList.ToArray());
-                Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, triList.ToArray());
+        //        Vector4[] elems = mr.InputElements;
 
-                _context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
-                _context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
+        //        for (int i = 0; i < elems.Length; i += 2)
+        //        {
+        //            Vector4 elem = elems[i];
 
-                _context.DrawIndexed(triList.Count, 0, 0);
+        //            Matrix m = new Matrix();
+        //            m.Row1 = elem;
 
-                _vertexBuffer.Dispose();
-                _indexBuffer.Dispose();
-            }
-        }
+        //            Vector4 transformed = (m * WorldViewProj).Row1;
+        //            vertList.Add(transformed);
+        //            vertList.Add(elems[i + 1]);
+        //        }
 
-        private void DrawInstanced(Matrix viewProj)
-        {
-            throw new Exception("Implement frustum culling");
+        //        int[] triangles = mr.Mesh.Triangles;
+        //        triangles = triangles.Select(x => x + triMax).ToArray();
+        //        triMax += mr.Mesh.Triangles.Max() + 1;
+        //        triList.AddRange(triangles);
+        //        //foreach (int i in triangles)
+        //        //    triList.Add(i);
+        //        //foreach (int i in triangles)
+        //        //    Add(ref triList, i, triListIndex++);
 
-            foreach (Mesh curMesh in MeshRenderer._instancedMeshSet.Keys)
-            {
-                Buffer vertBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, curMesh.Vertices);
-                Buffer indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, curMesh.Triangles);
 
-                var shaderGrouped = MeshRenderer._instancedMeshSet[curMesh].GroupBy(x => x.Material.Shader).ToDictionary(x => x.Key);
 
-                foreach (Shader s in shaderGrouped.Keys)
-                {
-                    _context.VertexShader.Set(s.VertexShader);
-                    _context.PixelShader.Set(s.PixelShader);
-                    _context.InputAssembler.InputLayout = s.InputLayout;
-                    _context.VertexShader.SetConstantBuffer(0, _instanceConstantBuffer);
+        //        //_context.UpdateSubresource(ref _worldViewProj, _constantBuffer);
+        //        #endregion                
 
-                    Matrix __world = Matrix.Identity;
-                    Matrix MVP = __world * _cameraView * _cameraProj;
-                    MVP.Transpose();
-                    _context.UpdateSubresource(ref MVP, _instanceConstantBuffer);
+        //        //Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, elems);
+        //        //Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, mr.Mesh.Triangles);
 
-                    MeshRenderer[] mrList = shaderGrouped[s].ToArray();
+        //        //_context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
+        //        //_context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
 
-                    List<Vector4> instanceList = new List<Vector4>();
+        //        //_context.DrawIndexed(mr.Mesh.Triangles.Length, 0, 0);
 
-                    foreach (MeshRenderer mr in mrList)
-                    {
-                        instanceList.AddRange(mr.Material.GetInputElements(mr));
-                    }
+        //        //_vertexBuffer.Dispose();
+        //        //_indexBuffer.Dispose();
+        //    }
 
-                    Buffer instanceBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, instanceList.ToArray());
+        //    if (vertList.Count != 0)
+        //    {
+        //        Buffer _vertexBuffer = Buffer.Create(_device, BindFlags.VertexBuffer, vertList.ToArray());
+        //        Buffer _indexBuffer = Buffer.Create(_device, BindFlags.IndexBuffer, triList.ToArray());
 
-                    VertexBufferBinding[] buffArray = new VertexBufferBinding[]
-                        {
-                            new VertexBufferBinding(vertBuffer,16,0),
-                            new VertexBufferBinding(instanceBuffer,32,0)
-                        };
+        //        _context.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(_vertexBuffer, 32, 0));
+        //        _context.InputAssembler.SetIndexBuffer(_indexBuffer, Format.R32_UInt, 0);
 
-                    _context.InputAssembler.SetIndexBuffer(indexBuffer, Format.R32_UInt, 0);
-                    _context.InputAssembler.SetVertexBuffers(0, buffArray);
-                    _context.VertexShader.SetConstantBuffer(0, _instanceConstantBuffer);
+        //        _context.DrawIndexed(triList.Count, 0, 0);
 
-                    _context.DrawIndexedInstanced(curMesh.Triangles.Length, mrList.Length, 0, 0, 0);
-                }
-
-                vertBuffer.Dispose();
-                indexBuffer.Dispose();
-            }
-        }
+        //        _vertexBuffer.Dispose();
+        //        _indexBuffer.Dispose();
+        //    }
+        //}
     }
 }

@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -104,7 +104,6 @@
     </Compile>
     <Compile Include="Structures\Materials\BasicMaterial.cs" />
     <Compile Include="Structures\Mesh.cs" />
-    <Compile Include="Structures\VertexColorElement.cs" />
     <Compile Include="Utilities\MathHelper.cs" />
   </ItemGroup>
   <ItemGroup>

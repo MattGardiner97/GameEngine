@@ -55,7 +55,7 @@ namespace GameEngine
             get
             {
                 Matrix forwardMatrix = Matrix.Translation(Vector3.ForwardLH) * RotationMatrix;
-                return this.Position + forwardMatrix.TranslationVector;
+                return this.WorldPosition + forwardMatrix.TranslationVector;
             }
         }
         public Vector3 Backward

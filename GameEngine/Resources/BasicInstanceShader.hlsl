@@ -1,8 +1,7 @@
 ﻿struct VS_IN
 {
 	float4 pos : POSITION;
-	float4 instancePos : INSTANCEPOS;
-	float4 instanceCol : INSTANCECOL;
+	uint instanceID : INSTANCEID;
 };
 
 struct PS_IN
@@ -11,20 +10,27 @@ struct PS_IN
 	float4 col : COLOR;
 };
 
-float4x4 worldViewProj;
+cbuffer colorStruct : register(b0)
+{
+	float4 mainColor;
+};
+
+cbuffer matrixStruct : register(b1)
+{
+	float4x4 worldViewProj[1024];
+};
 
 
 PS_IN VS(VS_IN input)
 {
 	PS_IN output;
 
-	//input.instancePos.w = 1;
-	float4 pos = input.pos + input.instancePos;
-	pos.w = 1;
+	input.pos.w = 1;
 
-	output.pos = mul(pos, worldViewProj);
+	output.pos = mul(input.pos, worldViewProj[input.instanceID]);
 
-	output.col = input.instanceCol;
+	output.col = mainColor;
+	
 
 	return output;
 }

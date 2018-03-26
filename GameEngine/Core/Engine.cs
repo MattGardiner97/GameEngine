@@ -20,7 +20,6 @@ namespace GameEngine
         private Graphics _graphics;
 
         internal bool _finished { get; private set; } = false;
-        //internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
 
         public bool Finished { get; private set; }
         public long FrameCount { get; private set; }
@@ -38,7 +37,7 @@ namespace GameEngine
         {
             Input.Init();
             _graphics.Init();
-            ShaderManager.Init(_graphics.GraphicsDevice);
+            ShaderManager.Init();
 
             //Must be last
             Camera.Init();
@@ -47,6 +46,8 @@ namespace GameEngine
         public void Start()
         {
             Time.Start();
+
+            GameObject.StartAll();
 
             RenderLoop.Run(_graphics.Form, EngineLoop);
         }
@@ -80,9 +81,6 @@ namespace GameEngine
             GameObject.UpdateAll();
 
             FrameCount++;
-            if(FrameCount %10 == 0)
-                _graphics.Form.Text = $"{1 / Time.DeltaTime}FPS";
-
         }
 
         internal void Draw()
