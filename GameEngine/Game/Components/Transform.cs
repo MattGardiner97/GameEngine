@@ -11,44 +11,51 @@ namespace GameEngine
 {
     public class Transform : Component
     {
-        public Vector3 Position
-        {
-            get;
-            set;
-        }
-        public Vector3 WorldPosition
+        private const float RadianRatio = (float)Math.PI / 180f;
+        private const float DegreeRatio = 180f / (float)Math.PI;
+
+        public Matrix TranslationMatrix { get; private set; } = Matrix.Translation(Vector3.Zero);
+        public Matrix RotationMatrix
         {
             get
             {
-                if (GameObject.Parent == null)
-                {
-                    return Position;
-                }
-                else
-                {
-                    return GameObject.Parent.Transform.WorldPosition;
-                }
+                Vector3 rot = Rotation.ToRadians();
+                return Matrix.RotationX(rot.X) * Matrix.RotationY(rot.Y) * Matrix.RotationZ(rot.Z);
             }
         }
+        public Matrix ScaleMatrix { get; private set; } = Matrix.Scaling(1);
+        public Matrix WorldMatrix { get { return TranslationMatrix * RotationMatrix * ScaleMatrix; } }
+
+        public Vector3 Position
+        {
+            get { return (Vector3)TranslationMatrix.TranslationVector; }
+            set { TranslationMatrix = Matrix.Translation(value); }
+        }
+        public Vector3 WorldPosition { get { return GameObject.Parent?.Transform.WorldPosition + Position ?? Position; } }
         public Vector3 Scale
         {
-            get;
-            set;
-        } = Vector3.One;
-        public Vector3 Rotation
-        {
-            get;
-            set;
+            get { return (Vector3)ScaleMatrix.ScaleVector; }
+            set { ScaleMatrix = Matrix.Scaling(value); }
         }
+        //public Vector3 Rotation
+        //{
+        //    get
+        //    {
+        //        return Vector3.Zero;
+        //    }
+        //    set
+        //    {
+        //        value = value.ToRadians();
+        //        RotationMatrix = Matrix.RotationX(value.X) * Matrix.RotationY(value.Y) * Matrix.RotationZ(value.Z);
+        //    }
+        //}
+        public Vector3 Rotation { get; set; }
         public Vector3 Forward
         {
             get
             {
-                return MathHelper.CalculateVectorDirection(Rotation);
-            }
-            set
-            {
-                throw new NotImplementedException("Coming soon");
+                Matrix forwardMatrix = Matrix.Translation(Vector3.ForwardLH) * RotationMatrix;
+                return this.WorldPosition + forwardMatrix.TranslationVector;
             }
         }
         public Vector3 Backward
@@ -66,7 +73,7 @@ namespace GameEngine
         {
             get
             {
-                return new Vector3(Forward.Z, Position.Y, Forward.X*-1);
+                return new Vector3(Forward.Z, Position.Y, Forward.X * -1);
             }
         }
         public Vector3 Left
@@ -76,7 +83,6 @@ namespace GameEngine
                 return -Right;
             }
         }
-
         public Vector3 Up
         {
             get
@@ -95,16 +101,14 @@ namespace GameEngine
                 Position += Value;
             else
             {
-                Position += Value.Z * Forward;
-                Position += Value.X * new Vector3(Right.X,0,Right.Z);
-                Position += Value.Y * Up;
+                Matrix translateMatrix = Matrix.Translation(Value) * RotationMatrix;
+                Position += translateMatrix.TranslationVector;
             }
 
         }
-
         public void Rotate(Vector3 value)
         {
-            Rotation += value;
+            this.Rotation+= value;
         }
     }
 }

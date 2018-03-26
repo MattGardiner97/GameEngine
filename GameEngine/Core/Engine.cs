@@ -11,6 +11,7 @@ using Math = GameEngine.Utilities.MathHelper;
 using GameEngine.Utilities;
 using System.Timers;
 using GameEngine.Structures;
+using SharpDX.Windows;
 
 namespace GameEngine
 {
@@ -19,10 +20,10 @@ namespace GameEngine
         private Graphics _graphics;
 
         internal bool _finished { get; private set; } = false;
-        //internal List<GameObject> ObjectList { get; private set; } = new List<GameObject>();
 
         public bool Finished { get; private set; }
-        
+        public long FrameCount { get; private set; }
+
 
         public static Engine Current { get; private set; }
 
@@ -36,9 +37,9 @@ namespace GameEngine
         {
             Input.Init();
             _graphics.Init();
-            ShaderManager.Init(_graphics.GraphicsDevice);
+            ShaderManager.Init();
 
-            
+            //Must be last
             Camera.Init();
         }
 
@@ -46,7 +47,9 @@ namespace GameEngine
         {
             Time.Start();
 
-            _graphics.Start();   
+            GameObject.StartAll();
+
+            RenderLoop.Run(_graphics.Form, EngineLoop);
         }
 
         public void Exit()
@@ -69,14 +72,15 @@ namespace GameEngine
         internal void Update()
         {
             Time.Update();
-            Input.Update();
+            if (_graphics.Form.Focused)
+                Input.Update();
             Debug.Update();
             Cursor.Update();
 
-            foreach (GameObject go in GameObject.ObjectList)
-            {
-                go.Update();
-            }
+
+            GameObject.UpdateAll();
+
+            FrameCount++;
         }
 
         internal void Draw()
@@ -89,11 +93,6 @@ namespace GameEngine
             _graphics.Dispose();
             ShaderManager.Dispose();
             Input.Dispose();
-        }
-
-        public void WriteConsole(string Message)
-        {
-            Console.WriteLine(Message);
         }
     }
 }

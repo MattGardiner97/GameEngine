@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using SharpDX;
 using SharpDX.DirectInput;
+using System.Linq;
 
 namespace GameEngine
 {

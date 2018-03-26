@@ -15,65 +15,48 @@ using SharpDX.DXGI;
 using GameEngine.Structures;
 using GameEngine.Utilities;
 
-using Device = SharpDX.Direct3D11.Device;
-
 namespace GameEngine
 {
     internal static class ShaderManager
     {
         public static Shader BasicShader { get; private set; }
+        public static Shader BasicInstanceShader { get; private set; }
         public static Shader UIShader { get; private set; }
 
-        internal static void Init(Device device)
+        internal static void Init()
         {
             //Basic shader
             {
                 //Trim the first 3 bytes because Visual Studio adds 3 bad characters at the start of the file
                 byte[] trimmedBytes = Properties.Resources.BasicShader.SubArray(3);
-                var vsByteCode = ShaderBytecode.Compile(trimmedBytes, "VS", "vs_4_0");
-                VertexShader vs = new VertexShader(device, vsByteCode);
-                var psByteCode = ShaderBytecode.Compile(trimmedBytes, "PS", "ps_4_0");
-                PixelShader ps = new PixelShader(device, psByteCode);
 
-                InputLayout layout = new InputLayout(device, ShaderSignature.GetInputSignature(vsByteCode), new InputElement[]
+                InputElement[] elems = new InputElement[]
                     {
-                        new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0),
-                        new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
-                    });
+                        new InputElement("POSITION",0,Format.R32G32B32A32_Float,-1,0),
+                    };
 
-                Shader basicShader = new Shader(vs, ps, layout);
+                Shader basicShader = Shader.Create(trimmedBytes, elems);
                 ShaderManager.BasicShader = basicShader;
-
-                vsByteCode.Dispose();
-                psByteCode.Dispose();
             }
 
-            //UI Shader
+            //Basic Instance shader
             {
-                byte[] trimmedBytes = Properties.Resources.UIShader.SubArray(3);
-                var vsByteCode = ShaderBytecode.Compile(trimmedBytes, "VS", "vs_4_0");
-                VertexShader vs = new VertexShader(device, vsByteCode);
-                var psByteCode = ShaderBytecode.Compile(trimmedBytes, "PS", "ps_4_0");
-                PixelShader ps = new PixelShader(device, psByteCode);
+                byte[] trimmedBytes = Properties.Resources.BasicInstanceShader.SubArray(3);
+                InputElement[] elems = new InputElement[]
+                {
+                    new InputElement("POSITION",0,Format.R32G32B32A32_Float,-1,0,InputClassification.PerVertexData,0),
 
-                InputLayout layout = new InputLayout(device, ShaderSignature.GetInputSignature(vsByteCode), new InputElement[]
-                    {
-                        new InputElement("POSITION",0,Format.R32G32B32A32_Float,0,0),
-                        new InputElement("COLOR",0,Format.R32G32B32A32_Float,16,0)
-                    });
+                    new InputElement("INSTANCEID",0,Format.R32_UInt,-1,1,InputClassification.PerInstanceData,1)
+                };
 
-                Shader uiShader = new Shader(vs, ps, layout);
-                ShaderManager.UIShader = uiShader;
-
-                vsByteCode.Dispose();
-                psByteCode.Dispose();
+                Shader basicInstanceShader = Shader.Create(trimmedBytes, elems);
+                ShaderManager.BasicInstanceShader = basicInstanceShader;
             }
         }
 
         internal static void Dispose()
         {
-            BasicShader.Dispose();
-            UIShader.Dispose();
+            Shader.DisposeAll();
         }
 
     }

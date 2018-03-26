@@ -63,6 +63,16 @@ namespace GameEngine.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] BasicInstanceShader {
+            get {
+                object obj = ResourceManager.GetObject("BasicInstanceShader", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] BasicShader {
             get {
                 object obj = ResourceManager.GetObject("BasicShader", resourceCulture);

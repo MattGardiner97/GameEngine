@@ -22,9 +22,30 @@ namespace GameEngine
                 _mesh.Transform = GameObject.Transform;
             }
         }
-        public Material Material { get; set; } = new BasicMaterial();
+        private Material _material;
+        public Material Material
+        {
+            get
+            {
+                return _material;
+            }
+            set
+            {
+                if (_material != null)
+                    _material.RemoveMeshRenderer(this);
 
-        public Vector4[] InputElements { get { return this.Material.GetInputElements(this.Mesh); } }
+                value.AddMeshRenderer(this);
+                _material = value;
+            }
+        }
+
+
+        public MeshRenderer()
+        {
+            
+        }
+
+        //public Vector4[] InputElements { get { return this.Material.GetInputElements(this); } }
 
         internal override void Dispose()
         {
