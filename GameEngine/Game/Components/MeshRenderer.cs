@@ -44,12 +44,5 @@ namespace GameEngine
         {
             
         }
-
-        //public Vector4[] InputElements { get { return this.Material.GetInputElements(this); } }
-
-        internal override void Dispose()
-        {
-            Material.Dispose();
-        }
     }
 }

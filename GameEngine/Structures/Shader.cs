@@ -35,13 +35,11 @@ namespace GameEngine.Structures
 
         internal static void DisposeAll()
         {
-            foreach(Shader s in _shaderPool)
-            {
+            foreach (Shader s in _shaderPool)
                 s.Dispose();
-            }
         }
 
-        private void Dispose()
+        internal void Dispose()
         {
             VertexShader.Dispose();
             PixelShader.Dispose();

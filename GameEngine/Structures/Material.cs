@@ -32,14 +32,5 @@ namespace GameEngine
             this.Shader = shader;
             _materialList.Add(this);
         }
-
-        internal void Dispose()
-        {
-        }
-
-        internal void Dispose()
-        {
-            Shader.Dispose();
-        }
     }
 }
