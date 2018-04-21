@@ -9,6 +9,7 @@
 
     public enum Primitive3D
     {
-        Cube
+        Cube,
+        NewCube
     }
 }

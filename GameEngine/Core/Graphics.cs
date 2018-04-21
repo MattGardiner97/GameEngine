@@ -20,9 +20,13 @@ using Math = System.Math;
 
 using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
+using DeviceContext = SharpDX.Direct3D11.DeviceContext;
+using Factory = SharpDX.DXGI.Factory;
+using TextRenderer = GameEngine.Core.TextRenderer;
 
 using GameEngine.Utilities;
 using GameEngine.Structures;
+using SharpDX.Direct2D1;
 
 namespace GameEngine
 {
@@ -40,6 +44,8 @@ namespace GameEngine
         private Texture2D _backBuffer;
         private Texture2D _depthBuffer;
         private DepthStencilView _depthView;
+
+        public TextRenderer TextRenderer;
 
 
         public Vector3 CameraPosition = new Vector3(0, 2, -3f);
@@ -95,13 +101,11 @@ namespace GameEngine
             };
 
 #if DEBUG
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.Debug, _swapChainDescription, out _device, out _swapChain);
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.Debug | DeviceCreationFlags.BgraSupport, _swapChainDescription, out _device, out _swapChain);
 #else
-            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, _swapChainDescription, out _device, out _swapChain);
+            Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport, _swapChainDescription, out _device, out _swapChain);
             
 #endif
-
-
             _context = _device.ImmediateContext;
 
             _factory = _swapChain.GetParent<Factory>();
@@ -134,7 +138,7 @@ namespace GameEngine
                 CullMode = CullMode.Back,
                 DepthBias = 0,
                 DepthBiasClamp = 0,
-                FillMode = FillMode.Solid,
+                FillMode = SharpDX.Direct3D11.FillMode.Solid,
                 IsAntialiasedLineEnabled = false,
                 IsDepthClipEnabled = true,
                 IsFrontCounterClockwise = false,
@@ -143,7 +147,13 @@ namespace GameEngine
                 SlopeScaledDepthBias = 0
             });
 
+
+
             _context.OutputMerger.SetTargets(_depthView, _renderTargetView);
+
+            this.TextRenderer = new TextRenderer();
+            this.TextRenderer.Init(_backBuffer);
+            
 
             //Called when the program is exiting
             _form.FormClosing += (sender, args) =>
@@ -172,8 +182,12 @@ namespace GameEngine
             _context.ClearRenderTargetView(_renderTargetView, BackgroundColor);
             _context.ClearDepthStencilView(_depthView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
+            foreach (TextRenderObject tro in TextRenderObject._objectList)
+                this.TextRenderer.DrawTextRenderObject(tro);
+
             foreach (Material m in Material._materialList)
                 m.DrawAll();
+
 
             _swapChain.Present(0, PresentFlags.None);
         }
@@ -202,22 +216,23 @@ namespace GameEngine
         {
             _context.UpdateSubresource(ref Data, ConstantBuffer);
         }
-        public void UpdateConstantBuffer<T>(T[] Data, Buffer ConstantBuffer) where T :struct
+        public void UpdateConstantBuffer<T>(T[] Data, Buffer ConstantBuffer) where T : struct
         {
             _context.UpdateSubresource(Data, ConstantBuffer);
         }
         public void SetIndexBuffer(Buffer Buffer) { _context.InputAssembler.SetIndexBuffer(Buffer, Format.R32_UInt, 0); }
         public void SetVertexBuffers(VertexBufferBinding[] Buffers) { _context.InputAssembler.SetVertexBuffers(0, Buffers); }
-        public void SetConstantBuffer(int BufferIndex, Buffer ConstantBuffer) { _context.VertexShader.SetConstantBuffer(BufferIndex,ConstantBuffer); }
+        public void SetVertexShaderConstantBuffer(int BufferIndex, Buffer ConstantBuffer) { _context.VertexShader.SetConstantBuffer(BufferIndex, ConstantBuffer); }
+        public void SetPixelShaderConstantBuffer(int BufferIndex, Buffer ConstantBuffer) { _context.PixelShader.SetConstantBuffer(BufferIndex, ConstantBuffer); }
 
         //Public Draw calls
         public void DrawIndexed(int IndexCount, int StartIndexLocation, int BaseVertexLocation)
         {
             _context.DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
         }
-        public void DrawIndexedInstanced(int IndexCount, int InstanceCount,int StartIndexLocation, int BaseVertexLocation, int StartInstanceLocation)
+        public void DrawIndexedInstanced(int IndexCount, int InstanceCount, int StartIndexLocation, int BaseVertexLocation, int StartInstanceLocation)
         {
-            _context.DrawIndexedInstanced(IndexCount,InstanceCount, 0, 0, 0);
+            _context.DrawIndexedInstanced(IndexCount, InstanceCount, 0, 0, 0);
 
         }
     }

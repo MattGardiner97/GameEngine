@@ -15,6 +15,7 @@ namespace GameEngine
 
         public Vector4[] Vertices { get; set; }
         public int[] Triangles { get; set; }
+        public Vector3[] Normals { get; set; }
         public Transform Transform { get; set; }
 
         public Vector3 Size { get; private set; }
@@ -77,6 +78,34 @@ namespace GameEngine
             OriginNearPoint = shortestPoint;
             OriginFarPoint = farthestPoint;
         }
+        public void CalculateNormals()
+        {
+            Vector3[] result = new Vector3[this.Triangles.Length];
+
+            for(int i = 0; i < Triangles.Length;i+=3)
+            {
+                int index1 = Triangles[i];
+                int index2 = Triangles[i + 1];
+                int index3 = Triangles[i + 2];
+
+                Vector4 v1 = Vertices[index1];
+                Vector4 v2 = Vertices[index2];
+                Vector4 v3 = Vertices[index3];
+
+                Vector3 edge1 = (Vector3)(v2 - v1);
+                Vector3 edge2 = (Vector3)(v3 - v2);
+
+                Vector3 normal = Vector3.Cross(edge1, edge1);
+
+                normal.Normalize();
+
+                result[i] = normal;
+                result[i + 1] = normal;
+                result[i + 2] = normal;
+            }
+
+            this.Normals = result;
+        }
 
         #region Statics
         public static Mesh From3DPrimitive(Primitive3D type)
@@ -84,11 +113,90 @@ namespace GameEngine
             Mesh m = new Mesh();
 
             Vector4[] verts = new Vector4[0];
-            Vector4[] colors = new Vector4[0];
             int[] tris = new int[0];
 
             switch (type)
             {
+                case Primitive3D.NewCube:
+                    verts = new Vector4[]
+                    {
+                        //Front Face
+                        //1 2
+                        //0 3
+                        new Vector4(-0.5f,-0.5f,-0.5f,1),
+                        new Vector4(-0.5f,0.5f,-0.5f,1),
+                        new Vector4(0.5f,0.5f,-0.5f,1),
+                        new Vector4(0.5f,-0.5f,-0.5f,1),
+
+                        //Back Face
+                        //6 5
+                        //7 4
+                        new Vector4(-0.5f,-0.5f,0.5f,1),
+                        new Vector4(-0.5f,0.5f,0.5f,1),
+                        new Vector4(0.5f,0.5f,0.5f,1),
+                        new Vector4(0.5f,-0.5f,0.5f,1),
+
+                        //Left Face
+                        //9 10
+                        //8 11
+                        new Vector4(-0.5f,-0.5f,0.5f,1),
+                        new Vector4(-0.5f,0.5f,0.5f,1),
+                        new Vector4(-0.5f,0.5f,-0.5f,1),
+                        new Vector4(-0.5f,-0.5f,-0.5f,1),
+
+                        //Right face
+                        //14 13
+                        //15 12
+                        new Vector4(0.5f,-0.5f,0.5f,1),
+                        new Vector4(0.5f,0.5f,0.5f,1),
+                        new Vector4(0.5f,0.5f,-0.5f,1),
+                        new Vector4(0.5f,-0.5f,-0.5f,1),
+
+                        //Top Face
+                        //17 18
+                        //16 19
+                        new Vector4(-0.5f,0.5f,-0.5f,1),
+                        new Vector4(-0.5f,0.5f,0.5f,1),
+                        new Vector4(0.5f,0.5f,0.5f,1),
+                        new Vector4(0.5f,0.5f,-0.5f,1),
+
+                        //Bottom Face
+                        //20 23
+                        //21 22
+                        new Vector4(-0.5f,-0.5f,-0.5f,1),
+                        new Vector4(-0.5f,-0.5f,0.5f,1),
+                        new Vector4(0.5f,-0.5f,0.5f,1),
+                        new Vector4(0.5f,-0.5f,-0.5f,1)
+                    };
+
+                    tris = new int[]
+                    {
+                        //Front
+                        0,1,2,
+                        2,3,0,
+
+                        //Back
+                        7,6,5,
+                        5,4,7,
+
+                        //Left
+                        8,9,10,
+                        10,11,8,
+
+                        //Right
+                        15,14,13,
+                        13,12,15,
+
+                        //Top
+                        16,17,18,
+                        18,19,16,
+
+                        //Bottom
+                        21,20,23,
+                        23,22,21
+                    };
+
+                    break;
                 case Primitive3D.Cube:
                     verts = new Vector4[]
                     {
@@ -103,18 +211,6 @@ namespace GameEngine
                         new Vector4(-0.5f,0.5f,0.5f,1f), //Top left: 5
                         new Vector4(0.5f,-0.5f,0.5f,1f), //Bottom right: 6
                         new Vector4(0.5f,0.5f,0.5f,1f) //Top right: 7
-                    };
-
-                    colors = new Vector4[]
-                    {
-                        new Vector4(1,0,0,1),
-                        new Vector4(0,1,0,1),
-                        new Vector4(0,0,1,1),
-                        new Vector4(1,1,0,1),
-                        new Vector4(1,0,1,1),
-                        new Vector4(0,1,1,0),
-                        new Vector4(0,0,0,1),
-                        new Vector4(1,1,1,1)
                     };
 
                     tris = new int[]

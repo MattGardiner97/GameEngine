@@ -34,8 +34,8 @@ namespace GameEngine
                 Graphics.Current.UpdateConstantBuffer(ref _color, _colorBuffer);
 
                 Graphics.Current.SetShader(this.Shader);
-                Graphics.Current.SetConstantBuffer(0, _matrixBuffer);
-                Graphics.Current.SetConstantBuffer(1, _colorBuffer);
+                Graphics.Current.SetVertexShaderConstantBuffer(0, _matrixBuffer);
+                Graphics.Current.SetVertexShaderConstantBuffer(1, _colorBuffer);
 
                 Buffer vertexBuffer = Graphics.Current.CreateVertexBuffer(m.Vertices);
                 Buffer indexBuffer = Graphics.Current.CreateIndexBuffer(m.Triangles);

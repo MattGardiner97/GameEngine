@@ -21,6 +21,7 @@ namespace GameEngine
     {
         public static Shader BasicShader { get; private set; }
         public static Shader BasicInstanceShader { get; private set; }
+        public static Shader BasicLightShader { get; private set; }
         public static Shader UIShader { get; private set; }
 
         internal static void Init()
@@ -51,6 +52,19 @@ namespace GameEngine
 
                 Shader basicInstanceShader = Shader.Create(trimmedBytes, elems);
                 ShaderManager.BasicInstanceShader = basicInstanceShader;
+            }
+
+            {
+                byte[] trimmedBytes = Properties.Resources.BasicLightShader.SubArray(3);
+                InputElement[] elems = new InputElement[]
+                {
+                    new InputElement("POSITION", 0,Format.R32G32B32A32_Float,-1,0),
+                    new InputElement("COLOR",0,Format.R32G32B32A32_Float,-1,0),
+                    new InputElement("NORMAL",0,Format.R32G32B32_Float,-1,0)
+                };
+
+                Shader basicLightShader = Shader.Create(trimmedBytes, elems);
+                ShaderManager.BasicLightShader = basicLightShader;
             }
         }
 

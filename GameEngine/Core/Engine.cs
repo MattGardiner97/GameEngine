@@ -68,7 +68,7 @@ namespace GameEngine
             Draw();
         }
 
-
+        DateTime lastUpdate = new DateTime(0);
         internal void Update()
         {
             Time.Update();
@@ -76,6 +76,14 @@ namespace GameEngine
                 Input.Update();
             Debug.Update();
             Cursor.Update();
+
+
+            int fpsUpdateRate = 1000;
+            if ((DateTime.UtcNow - lastUpdate).TotalMilliseconds >= fpsUpdateRate)
+            {
+                _graphics.Form.Text = $"{(1 / Time.DeltaTime)} FPS";
+                lastUpdate = DateTime.UtcNow;
+            }
 
 
             GameObject.UpdateAll();

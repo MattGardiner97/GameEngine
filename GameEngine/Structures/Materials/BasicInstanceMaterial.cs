@@ -52,8 +52,8 @@ namespace GameEngine
             Graphics.Current.UpdateConstantBuffer(ref _color, _colorBuffer);
 
             Graphics.Current.SetShader(this.Shader);
-            Graphics.Current.SetConstantBuffer(0, _colorBuffer);
-            Graphics.Current.SetConstantBuffer(1, _matrixBuffer);
+            Graphics.Current.SetVertexShaderConstantBuffer(0, _colorBuffer);
+            Graphics.Current.SetVertexShaderConstantBuffer(1, _matrixBuffer);
 
 
 

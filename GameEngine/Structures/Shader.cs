@@ -48,9 +48,15 @@ namespace GameEngine.Structures
 
         public static Shader Create(byte[] ShaderData, InputElement[] InputElements, string VertexShaderFunctionName = "VS", string PixelShaderFunctioName = "PS")
         {
-            var vsByteCode = ShaderBytecode.Compile(ShaderData, VertexShaderFunctionName, "vs_4_0");
+            ShaderFlags flags = ShaderFlags.None;
+
+#if DEBUG
+            flags = ShaderFlags.Debug;
+#endif
+
+            var vsByteCode = ShaderBytecode.Compile(ShaderData, VertexShaderFunctionName, "vs_4_0",flags);
             VertexShader vs = new VertexShader(Graphics.Current.GraphicsDevice, vsByteCode);
-            var psByteCode = ShaderBytecode.Compile(ShaderData, PixelShaderFunctioName, "ps_4_0");
+            var psByteCode = ShaderBytecode.Compile(ShaderData, PixelShaderFunctioName, "ps_4_0",flags);
             PixelShader ps = new PixelShader(Graphics.Current.GraphicsDevice, psByteCode);
 
             InputLayout layout = new InputLayout(Graphics.Current.GraphicsDevice, ShaderSignature.GetInputSignature(vsByteCode), InputElements);

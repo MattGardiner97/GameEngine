@@ -121,6 +121,9 @@
   <data name="BasicInstanceShader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\basicinstanceshader.hlsl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="BasicLightShader" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\basiclightshader.hlsl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="BasicShader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\basicshader.hlsl;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
